@@ -25,6 +25,11 @@ class HaystackApiService {
     const response = await this.api.get(`/read?filter=${entity}`)
     return response.data
   }
+
+  async getHistory(id, range = 'today') {
+    const response = await this.api.get(`/hisRead?id=@${id}&range=${range}`)
+    return response.data.rows
+  }
 }
 
 export default HaystackApiService

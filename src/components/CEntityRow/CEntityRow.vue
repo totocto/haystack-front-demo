@@ -16,8 +16,8 @@ export default {
       default: ''
     },
     his: {
-      type: Boolean,
-      default: false
+      type: Array,
+      default: () => []
     },
     type: {
       type: String,
