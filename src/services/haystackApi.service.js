@@ -1,7 +1,5 @@
 import axios from 'axios'
 
-const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'access_token'
-
 class HaystackApiService {
   constructor({ haystackApiHost }) {
     this.haystackApiHost = haystackApiHost
@@ -22,6 +20,7 @@ class HaystackApiService {
     const response = await this.api.get('/about')
     return response.data
   }
+
   async getEntity(entity) {
     const response = await this.api.get(`/read?filter=${entity}`)
     return response.data

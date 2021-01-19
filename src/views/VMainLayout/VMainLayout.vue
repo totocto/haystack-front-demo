@@ -16,12 +16,9 @@ export default {
     }
   },
   async beforeMount() {
-    console.log('HEYYY')
     await this.$store.dispatch('init')
   }
 }
-
 </script>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>

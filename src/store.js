@@ -30,9 +30,7 @@ export const actions = {
     context.commit('SET_HAYSTACK_INFORMATION', apiInformation)
   },
   async fetchEntity(context, { entity }) {
-    console.log('IN FETCH')
     const entities = await haystackApiService.getEntity(entity)
-    console.log(entities)
     context.commit('SET_ENTITIES', entities.rows)
   }
 }

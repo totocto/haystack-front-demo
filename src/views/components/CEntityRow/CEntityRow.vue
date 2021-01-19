@@ -29,11 +29,10 @@ export default {
       return this.id.split(' ')[0]
     },
     entityName() {
-      return this.id.replace(this.entityId + ' ', '')
+      return this.id.replace(`${this.entityId} `, '')
     }
   }
 }
-
 </script>
 
 <style lang="scss">
