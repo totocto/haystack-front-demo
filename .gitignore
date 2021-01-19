@@ -1,0 +1,29 @@
+.DS_Store
+node_modules
+/dist
+/coverage
+.eslintcache
+.stylelintcache
+/tests/e2e/videos/
+/tests/e2e/screenshots/
+
+# config files
+/src/config.js
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+*.orig
+/.nyc_output
+*.env
+
+cypress.env.json
