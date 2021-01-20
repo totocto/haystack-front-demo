@@ -1,17 +1,20 @@
 <template>
   <div>
     <h2>Informations</h2>
-    <c-entity-row v-for="row in entities" :key="row.id" :id="row.id" :his="getHistory(row.id)"> </c-entity-row>
+    <c-chart></c-chart>
+    <c-entity-row v-for="row in entities" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)">
+    </c-entity-row>
   </div>
 </template>
 
 <script>
 import { formatService } from '@/services'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.vue'
+import CChart from '../../components/CChart/CChart.vue'
 
 export default {
   name: 'VSummaryContent',
-  components: { CEntityRow },
+  components: { CEntityRow, CChart },
   computed: {
     entities() {
       return this.$store.getters.entities
@@ -31,7 +34,7 @@ export default {
     }
   },
   async beforeMount() {
-    await this.$store.dispatch('fetchEntity', { entity: 'site' })
+    await this.$store.dispatch('fetchEntity', { entity: 'point' })
     await this.$store.dispatch('fetchHistories', { idsEntity: this.idsWithHis })
   }
 }
