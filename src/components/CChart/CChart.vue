@@ -31,6 +31,10 @@ export default {
     data: {
       type: Array,
       default: () => null
+    },
+    unit: {
+      type: String,
+      default: ''
     }
   },
   mounted() {
@@ -39,8 +43,8 @@ export default {
         text: this.title
       },
       chart: {
-        width: '300',
-        height: '200'
+        width: '700',
+        height: '400'
       },
       yAxis: {
         title: {
@@ -51,7 +55,7 @@ export default {
         title: {
           text: this.xLabel
         },
-        categories: this.categories ? this.categories : ['07/20', '08/20', '09/20', '10/20', '11/20', '12/20']
+        categories: this.categories
       },
       legend: {
         enabled: false
@@ -60,7 +64,7 @@ export default {
         xenabled: false
       },
       tooltip: {
-        valueSuffix: 'kw'
+        valueSuffix: this.unit
       },
       series: [
         {

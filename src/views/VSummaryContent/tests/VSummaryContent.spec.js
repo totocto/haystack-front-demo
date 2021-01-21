@@ -3,11 +3,12 @@ import Vuex from 'vuex'
 import Vue from 'vue'
 import sinon from 'sinon'
 import VSummaryContent from '../VSummaryContent.vue'
+import CEntityRow from '../../../components/CEntityRow/CEntityRow.vue'
 
 Vue.use(Vuex)
 let wrapper
 let actions
-const globalStubs = ['router-view']
+const globalStubs = ['router-view', 'v-text-field']
 describe('VSummaryContent.vue', () => {
   beforeEach(() => {
     actions = {
@@ -29,16 +30,22 @@ describe('VSummaryContent.vue', () => {
       }
     })
   })
+  afterEach(() => {
+    sinon.restore()
+  })
   it('should mount the component', () => {
     expect(wrapper).toBeDefined()
   })
   it('should dispatch fetchEntity with right args', () => {
     expect(actions.fetchEntity.calledOnce).toBeTrue()
-    expect(actions.fetchEntity.args[0][1]).toEqual({ entity: 'point' })
+    expect(actions.fetchEntity.args[0][1]).toEqual({ entity: '' })
   })
   it('should call fetchHistory with right args', () => {
     expect(actions.fetchHistories.calledOnce).toBeTrue()
     expect(actions.fetchHistories.args[0][1]).toEqual({ idsEntity: ['p:thisisademo1'] })
+  })
+  it('should create CEntityRow component', () => {
+    expect(wrapper.findComponent(CEntityRow).exists()).toBeTrue()
   })
   describe('methods', () => {
     describe('#getHistory', () => {
@@ -46,6 +53,15 @@ describe('VSummaryContent.vue', () => {
         const idEntity = 'r:p:thisisademo1 demoEngie1'
         const historyResult = wrapper.vm.getHistory(idEntity)
         expect(historyResult).toEqual(['history1'])
+      })
+    })
+    describe('#updateFilter', () => {
+      it('should dispatch according to the input', async () => {
+        const newRequest = 'a request'
+        await wrapper.vm.updateFilter(newRequest)
+        expect(actions.fetchEntity.calledTwice).toBeTrue()
+        expect(actions.fetchEntity.args[1][1]).toEqual({ entity: newRequest })
+        expect(actions.fetchHistories.calledTwice).toBeTrue()
       })
     })
   })

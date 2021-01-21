@@ -7,7 +7,7 @@ import VMainLayout from '../VMainLayout.vue'
 Vue.use(Vuex)
 let wrapper
 let actions
-const globalStubs = ['router-view']
+const globalStubs = ['router-view', 'v-app-bar', 'v-img', 'v-spacer']
 describe('VMainLayout.vue', () => {
   beforeEach(() => {
     actions = {
