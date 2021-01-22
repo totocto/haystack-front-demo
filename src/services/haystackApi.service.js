@@ -16,11 +16,6 @@ class HaystackApiService {
     })
   }
 
-  async getHaystackInformation() {
-    const response = await this.api.get('/about')
-    return response.data
-  }
-
   async getEntity(entity) {
     const response = await this.api.get(`/read?filter=${entity}`)
     return response.data

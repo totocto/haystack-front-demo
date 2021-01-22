@@ -55,7 +55,9 @@ export default {
   computed: {
     tableValues() {
       return Object.keys(this.dataEntity).map(key => {
-        return { tag: key, value: this.getEntityValue(key), row_class: key }
+        const value = this.getEntityValue(key)
+        // eslint-disable-next-line
+        return { tag: key, value: value, row_class: value === '✓' ? `${key} haystack-marker` : key }
       })
     },
     entityId() {
@@ -78,10 +80,14 @@ export default {
     }
   },
   methods: {
+    getUrlCoordinate(coordinate) {
+      return `http://www.google.com/maps/place/${coordinate}`
+    },
     getEntityValue(dataEntityKey) {
       const value = this.dataEntity[dataEntityKey]
       if (value === 'm:') return '✓'
       if (value.substring(0, 2) === 'n:') return Number(value.substring(2))
+      if (value.substring(0, 2) === 'c:') return this.getUrlCoordinate(value.substring(2))
       if (value === '') return ''
       return value.substring(2)
     }

@@ -12,18 +12,25 @@ const globalStubs = ['router-view', 'v-text-field']
 describe('VSummaryContent.vue', () => {
   beforeEach(() => {
     actions = {
+      fetchAllEntity: sinon.stub(),
+      fetchAllHistories: sinon.stub(),
       fetchEntity: sinon.stub(),
-      fetchHistories: sinon.stub()
+      fetchHistories: sinon.stub(),
+      createApiServer: sinon.stub()
     }
     wrapper = shallowMount(VSummaryContent, {
       stubs: globalStubs,
       mocks: {
         $store: new Vuex.Store({
           getters: {
+            apiServers: () => ['an api', null],
             histories: () => {
-              return { 'p:thisisademo1': ['history1'] }
+              return [{ 'p:thisisademo1': ['history1'] }, []]
             },
-            entities: () => [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }]
+            entities: () => [
+              [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }],
+              []
+            ]
           },
           actions
         })
@@ -37,12 +44,12 @@ describe('VSummaryContent.vue', () => {
     expect(wrapper).toBeDefined()
   })
   it('should dispatch fetchEntity with right args', () => {
-    expect(actions.fetchEntity.calledOnce).toBeTrue()
-    expect(actions.fetchEntity.args[0][1]).toEqual({ entity: '' })
+    expect(actions.fetchAllEntity.calledOnce).toBeTrue()
+    expect(actions.fetchAllEntity.args[0][1]).toEqual({ entity: '' })
   })
   it('should call fetchHistory with right args', () => {
-    expect(actions.fetchHistories.calledOnce).toBeTrue()
-    expect(actions.fetchHistories.args[0][1]).toEqual({ idsEntity: ['p:thisisademo1'] })
+    expect(actions.fetchAllHistories.calledOnce).toBeTrue()
+    expect(actions.fetchAllHistories.args[0][1]).toEqual({ idsEntity: ['p:thisisademo1'] })
   })
   it('should create CEntityRow component', () => {
     expect(wrapper.findComponent(CEntityRow).exists()).toBeTrue()
@@ -56,12 +63,19 @@ describe('VSummaryContent.vue', () => {
       })
     })
     describe('#updateFilter', () => {
-      it('should dispatch according to the input', async () => {
+      it('should fetch new entity and histories according to the input', async () => {
         const newRequest = 'a request'
         await wrapper.vm.updateFilter(newRequest)
-        expect(actions.fetchEntity.calledTwice).toBeTrue()
-        expect(actions.fetchEntity.args[1][1]).toEqual({ entity: newRequest })
-        expect(actions.fetchHistories.calledTwice).toBeTrue()
+        expect(actions.fetchAllEntity.calledTwice).toBeTrue()
+        expect(actions.fetchAllHistories.calledTwice).toBeTrue()
+      })
+    })
+    describe('#updateAPI', () => {
+      it('should dispatch according to the input', async () => {
+        const newApiHost = 'an  api'
+        const apiNumber = 0
+        await wrapper.vm.updateAPI(newApiHost, apiNumber)
+        expect(actions.createApiServer.calledOnce).toBeTrue()
       })
     })
   })

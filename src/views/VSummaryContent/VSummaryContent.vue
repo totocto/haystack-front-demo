@@ -1,21 +1,40 @@
 <template>
   <div class="summary-content">
-    <h2>Informations</h2>
+    <h2>Sélectionner les API à requêter</h2>
+    <div class="summary-content__api-selector-container">
+      <v-text-field
+        class="summary-content__text-field"
+        label="API to query"
+        outlined
+        dense
+        :value="getDefaultApiHost"
+        @change="updateAPI($event, 0)"
+      />
+      <v-text-field
+        class="summary-content__text-field"
+        label="API to query"
+        outlined
+        dense
+        @change="updateAPI($event, 1)"
+      />
+    </div>
+    <h2>Recherche dans Haystack</h2>
     <v-text-field
       class="summary-content__text-field"
       label="Filter API"
       outlined
       dense
-      :value="track.api"
       @change="updateFilter($event)"
     />
-    <c-entity-row v-for="row in entities" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)">
-    </c-entity-row>
+    <h2>Result API 1</h2>
+    <c-entity-row v-for="row in entities[0]" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)" />
+    <h2>Result API 2</h2>
+    <c-entity-row v-for="row in entities[1]" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)" />
   </div>
 </template>
 
 <script>
-import { formatService } from '@/services'
+import { formatService } from '../../services'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.vue'
 
 export default {
@@ -33,26 +52,37 @@ export default {
       return this.$store.getters.entities
     },
     idsWithHis() {
-      return this.entities.filter(entity => entity.his).map(entity => formatService.formatIdEntity(entity.id))
+      return this.entities[0].filter(entity => entity.his).map(entity => formatService.formatIdEntity(entity.id))
     },
-    idHistories() {
+    histories() {
       return this.$store.getters.histories
+    },
+    getDefaultApiHost() {
+      return this.$store.getters.apiServers[0].haystackApiHost
+    },
+    getSecondApiHost() {
+      return this.$store.getters.apiServers[1] ? this.$store.getters.apiServers[1].haystackApiHost : ''
     }
   },
   methods: {
     getHistory(idEntity) {
       const formattedId = formatService.formatIdEntity(idEntity)
-      if (!this.idHistories[formattedId]) return null
-      return this.idHistories[formattedId]
+      if (!this.histories[0][formattedId]) return null
+      return this.histories[0][formattedId]
     },
     async updateFilter(newFilter) {
-      await this.$store.dispatch('fetchEntity', { entity: newFilter })
-      await this.$store.dispatch('fetchHistories', { idsEntity: this.idsWithHis })
+      await Promise.all([
+        await this.$store.dispatch('fetchAllEntity', { entity: newFilter }),
+        await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
+      ])
+    },
+    updateAPI(haystackApiHost, apiNumber) {
+      this.$store.dispatch('createApiServer', { haystackApiHost, apiNumber })
     }
   },
   async beforeMount() {
-    await this.$store.dispatch('fetchEntity', { entity: '' })
-    await this.$store.dispatch('fetchHistories', { idsEntity: this.idsWithHis })
+    await this.$store.dispatch('fetchAllEntity', { entity: '' })
+    await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
   }
 }
 </script>

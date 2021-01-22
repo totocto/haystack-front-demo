@@ -12,7 +12,7 @@ describe('CEntityRow.vue', () => {
       propsData: {
         id: 'id1',
         his: [{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }],
-        dataEntity: { 'Some Key': 's:A val1', 'marker': 'm:', 'number': 'n:64.00000' }
+        dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000' }
       }
     })
   })

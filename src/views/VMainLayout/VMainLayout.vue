@@ -22,15 +22,7 @@
 
 <script>
 export default {
-  name: 'VMainLayout',
-  computed: {
-    haystackInformation() {
-      return this.$store.getters.haystackInformation
-    }
-  },
-  async beforeMount() {
-    await this.$store.dispatch('init')
-  }
+  name: 'VMainLayout'
 }
 </script>
 

@@ -28,7 +28,4 @@ describe('VMainLayout.vue', () => {
   it('should mount the component', () => {
     expect(wrapper).toBeDefined()
   })
-  it('should dispatch init', () => {
-    expect(actions.init.calledOnce).toBeTrue()
-  })
 })

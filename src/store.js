@@ -1,28 +1,30 @@
 /* eslint-disable no-shadow */
 import Vuex from 'vuex'
 import Vue from 'vue'
-import { haystackApiService } from './services'
+import HaystackApiService from './services/haystackApi.service'
 
 Vue.use(Vuex)
+window.env = window.env || {}
 const state = {
-  haystackInformation: null,
-  entities: null,
-  histories: []
+  entities: { 0: null, 1: null },
+  histories: { 0: [], 1: [] },
+  apiServers: [new HaystackApiService({ haystackApiHost: window.env.HAYSTACK_API_HOST }), null]
 }
 export const mutations = {
-  SET_HAYSTACK_INFORMATION(state, information) {
-    state.haystackInformation = information
+  SET_ENTITIES(state, { entities, apiNumber }) {
+    state.entities[apiNumber] = entities
   },
-  SET_ENTITIES(state, entities) {
-    state.entities = entities
+  SET_HISTORIES(state, { idHistories, apiNumber }) {
+    state.histories[apiNumber] = idHistories
   },
-  SET_HISTORIES(state, histories) {
-    state.histories = histories
+  SET_HAYSTACK_API(state, { apiNumber, haystackApiHost }) {
+    const newApi = new HaystackApiService({ haystackApiHost })
+    state.apiServers[apiNumber] = newApi
   }
 }
 export const getters = {
-  haystackInformation(state) {
-    return state.haystackInformation
+  apiServers(state) {
+    return state.apiServers
   },
   entities(state) {
     return state.entities
@@ -32,23 +34,36 @@ export const getters = {
   }
 }
 export const actions = {
-  async init(context) {
-    const apiInformation = await haystackApiService.getHaystackInformation()
-    context.commit('SET_HAYSTACK_INFORMATION', apiInformation)
+  createApiServer(context, { haystackApiHost, apiNumber }) {
+    context.commit('SET_HAYSTACK_API', { apiNumber, haystackApiHost })
   },
-  async fetchEntity(context, { entity }) {
-    const entities = await haystackApiService.getEntity(entity)
-    context.commit('SET_ENTITIES', entities.rows)
+  async fetchEntity(context, { entity, apiNumber }) {
+    if (!state.apiServers[apiNumber]) return
+    const entities = await state.apiServers[apiNumber].getEntity(entity)
+    context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
-  async fetchHistories(context, { idsEntity }) {
+  async fetchHistories(context, { idsEntity, apiNumber }) {
+    if (!state.apiServers[apiNumber]) return
     const historiesPromises = await idsEntity.map(async id => {
-      return haystackApiService.getHistory(id)
+      return state.apiServers[apiNumber].getHistory(id)
     })
     const histories = await Promise.all(historiesPromises)
     const idHistories = {}
     // eslint-disable-next-line no-return-assign
     idsEntity.forEach((key, index) => (idHistories[key] = histories[index]))
-    context.commit('SET_HISTORIES', idHistories)
+    context.commit('SET_HISTORIES', { idHistories, apiNumber })
+  },
+  async fetchAllEntity(context, { entity }) {
+    await Promise.all([
+      context.dispatch('fetchEntity', { entity, apiNumber: 0 }),
+      context.dispatch('fetchEntity', { entity, apiNumber: 1 })
+    ])
+  },
+  async fetchAllHistories(context, { idsEntity }) {
+    await Promise.all([
+      context.dispatch('fetchHistories', { idsEntity, apiNumber: 0 }),
+      context.dispatch('fetchHistories', { idsEntity, apiNumber: 1 })
+    ])
   }
 }
 export default new Vuex.Store({
