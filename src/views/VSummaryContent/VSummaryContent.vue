@@ -61,9 +61,7 @@ export default {
   components: { CEntityRow, CMultipleEntitiesRow },
   data() {
     return {
-      track: {
-        filterApi: ''
-      }
+      filterApi: ''
     }
   },
   computed: {
@@ -89,7 +87,7 @@ export default {
     entitiesGroupedById() {
       // eslint-disable-next-line
       const entities = this.entities
-      return this.groupByIdEntities(entities[0], entities[0])
+      return this.groupByIdEntities(entities[0], entities[1])
     }
   },
   methods: {
@@ -105,13 +103,19 @@ export default {
       return [this.getHistory(idEntity, 0), this.getHistory(idEntity, 1)]
     },
     async updateFilter(newFilter) {
+      this.filterApi = newFilter
       await Promise.all([
         await this.$store.dispatch('fetchAllEntity', { entity: newFilter }),
         await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
       ])
     },
-    updateAPI(haystackApiHost, apiNumber) {
-      this.$store.dispatch('createApiServer', { haystackApiHost, apiNumber, isMultiApi: true })
+    async updateAPI(haystackApiHost, apiNumber) {
+      this.$store.dispatch('createApiServer', { haystackApiHost, apiNumber })
+      await Promise.all([
+        await this.$store.dispatch('fetchAllEntity', { entity: this.filterApi }),
+        await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
+      ])
+      this.$store.dispatch('activateMultiApi', { isMultiApi: true })
     }
   },
   async beforeMount() {

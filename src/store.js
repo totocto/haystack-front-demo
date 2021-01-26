@@ -41,9 +41,11 @@ export const getters = {
   }
 }
 export const actions = {
-  createApiServer(context, { haystackApiHost, apiNumber, isMultiApi }) {
+  createApiServer(context, { haystackApiHost, apiNumber }) {
     context.commit('SET_HAYSTACK_API', { apiNumber, haystackApiHost })
-    if (isMultiApi) context.commit('SET_IS_MULTI_API', true)
+  },
+  activateMultiApi(context, isMultiApi) {
+    context.commit('SET_IS_MULTI_API', isMultiApi)
   },
   async fetchEntity(context, { entity, apiNumber }) {
     if (!state.apiServers[apiNumber]) return

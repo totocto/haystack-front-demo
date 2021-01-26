@@ -1,7 +1,7 @@
 <template>
   <div class="entity-row__container">
-    <h2 v-if="!isFromExternalSource" class="entity-row__title">{{ entityName }}</h2>
-    <h3 v-if="isMultiApi" class="entity-row__subtitle">{{ subtitleWindow }}</h3>
+    <h2 v-if="!isFromExternalSource" data-test-entity-title class="entity-row__title">{{ entityName }}</h2>
+    <h3 v-if="isMultiApi" data-test-entity-subtitle class="entity-row__subtitle">{{ subtitleWindow }}</h3>
     <div class="content-container">
       <div class="entity-row__table">
         <v-data-table
@@ -14,7 +14,15 @@
           item-class="row_class"
         ></v-data-table>
       </div>
-      <c-chart class="entity-row__chart" v-if="his" :id="chartId" :categories="categories" :data="data" :unit="unit" />
+      <c-chart
+        data-test-history-chart
+        class="entity-row__chart"
+        v-if="his"
+        :id="chartId"
+        :categories="categories"
+        :data="data"
+        :unit="unit"
+      />
     </div>
   </div>
 </template>

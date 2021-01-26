@@ -5,6 +5,7 @@ import sinon from 'sinon'
 import VSummaryContent from '../VSummaryContent.vue'
 import CEntityRow from '../../../components/CEntityRow/CEntityRow.vue'
 
+// TODO : Tester les clicks update des v-text-field
 Vue.use(Vuex)
 let wrapper
 let actions
@@ -16,7 +17,8 @@ describe('VSummaryContent.vue', () => {
       fetchAllHistories: sinon.stub(),
       fetchEntity: sinon.stub(),
       fetchHistories: sinon.stub(),
-      createApiServer: sinon.stub()
+      createApiServer: sinon.stub(),
+      activateMultiApi: sinon.stub()
     }
     wrapper = shallowMount(VSummaryContent, {
       stubs: globalStubs,
@@ -58,8 +60,35 @@ describe('VSummaryContent.vue', () => {
     describe('#getHistory', () => {
       it('should return history associated to the entityId', () => {
         const idEntity = 'r:p:thisisademo1 demoEngie1'
-        const historyResult = wrapper.vm.getHistory(idEntity)
+        const historyResult = wrapper.vm.getHistory(idEntity, 0)
         expect(historyResult).toEqual(['history1'])
+      })
+    })
+    describe('#getHistories', () => {
+      beforeEach(() => {
+        wrapper = shallowMount(VSummaryContent, {
+          stubs: globalStubs,
+          mocks: {
+            $store: new Vuex.Store({
+              getters: {
+                apiServers: () => ['an api', null],
+                histories: () => {
+                  return [{ 'p:thisisademo1': ['history1'] }, { 'p:thisisademo1': ['history2'] }]
+                },
+                entities: () => [
+                  [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }],
+                  [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }]
+                ]
+              },
+              actions
+            })
+          }
+        })
+      })
+      it('should return histories associated to the entityId', () => {
+        const idEntity = 'r:p:thisisademo1 demoEngie1'
+        const historyResult = wrapper.vm.getHistories(idEntity)
+        expect(historyResult).toEqual([['history1'], ['history2']])
       })
     })
     describe('#updateFilter', () => {

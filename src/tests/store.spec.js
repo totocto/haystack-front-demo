@@ -4,7 +4,7 @@ import sinon from 'sinon'
 import { actions, getters, mutations } from '../store'
 import HaystackApiService from '../services/haystackApi.service'
 
-const { SET_ENTITIES, SET_HISTORIES } = mutations
+const { SET_ENTITIES, SET_HISTORIES, SET_IS_MULTI_API, SET_HAYSTACK_API } = mutations
 const entities = { rows: ['entity1', 'entity2'] }
 describe('store', () => {
   beforeAll(() => {
@@ -22,12 +22,29 @@ describe('store', () => {
         expect(state.entities).toEqual([entities, null])
       })
     })
+    describe('#SET_IS_MULTI_API', () => {
+      it('should set boolean isMultiApi', () => {
+        const state = { isMultiApi: false }
+        const isMultiApi = true
+        SET_IS_MULTI_API(state, isMultiApi)
+        expect(state.isMultiApi).toEqual(true)
+      })
+    })
     describe('#SET_HISTORIES', () => {
       it('should set histories', () => {
         const state = { histories: [{}, {}] }
         const idHistories = { entity1: ['history'], entity2: ['history'] }
         SET_HISTORIES(state, { idHistories, apiNumber: 0 })
         expect(state.histories).toEqual([idHistories, {}])
+      })
+    })
+    describe('#SET_HAYSTACK_API', () => {
+      it('should instanced a new haystackApi', () => {
+        const state = { apiServers: [] }
+        const haystackApiHost = 'anHost'
+        const expected = new HaystackApiService({ haystackApiHost })
+        SET_HAYSTACK_API(state, { haystackApiHost, apiNumber: 0 })
+        expect(state.apiServers).toEqual([expected])
       })
     })
   })
@@ -49,6 +66,21 @@ describe('store', () => {
         expect(historiesStored).toEqual(histories)
       })
     })
+    describe('#apiServers', () => {
+      it('should return apiServers', () => {
+        const apiServers = ['api1', 'api2']
+        const state = { apiServers }
+        const apiServersStored = getters.apiServers(state)
+        expect(apiServersStored).toEqual(apiServers)
+      })
+    })
+    describe('#isMultiApi', () => {
+      it('should return isMultiApi', () => {
+        const isMultiApi = true
+        const state = { isMultiApi }
+        expect(getters.isMultiApi(state)).toEqual(isMultiApi)
+      })
+    })
   })
   describe('actions', () => {
     let commit
@@ -60,6 +92,23 @@ describe('store', () => {
     afterEach(() => {
       commit.mockReset()
       dispatch.mockReset()
+    })
+    describe('#createApiServer', () => {
+      it('should commit a new apiServer', async () => {
+        const apiNumber = 1
+        const haystackApiHost = 'aHost'
+        await actions.createApiServer({ commit }, { haystackApiHost, apiNumber })
+        expect(commit).toHaveBeenCalled()
+        expect(commit).toHaveBeenNthCalledWith(1, 'SET_HAYSTACK_API', { haystackApiHost, apiNumber })
+      })
+    })
+    describe('#activateMultiApi', () => {
+      it('should commit a new apiServer', async () => {
+        const isMultiApi = true
+        await actions.activateMultiApi({ commit }, { isMultiApi })
+        expect(commit).toHaveBeenCalled()
+        expect(commit).toHaveBeenNthCalledWith(1, 'SET_IS_MULTI_API', { isMultiApi })
+      })
     })
     describe('#fetchEntity', () => {
       describe('When api exists', () => {
