@@ -30,7 +30,7 @@ export default {
     },
     data: {
       type: Array,
-      default: () => null
+      default: () => []
     },
     unit: {
       type: String,
@@ -68,7 +68,7 @@ export default {
       },
       series: [
         {
-          data: this.data ? this.data : [74.0, 69.0, 64.0, 65.0, 68.0, 71.0],
+          data: this.data,
           color: '#DC143C'
         }
       ]

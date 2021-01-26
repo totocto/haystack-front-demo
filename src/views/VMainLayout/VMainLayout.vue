@@ -27,6 +27,9 @@ export default {
 </script>
 
 <style lang="scss">
+.main-layout {
+  background-color: #f2f2f2;
+}
 .main-layout__title {
   color: black;
 }

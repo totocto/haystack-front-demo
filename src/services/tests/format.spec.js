@@ -29,4 +29,85 @@ describe('formatService', () => {
       expect(output).toEqual(expected)
     })
   })
+  describe('#groupById', () => {
+    describe('When ids are the same in both sources', () => {
+      it('should group entities with same id', () => {
+        // GIVEN
+        const entityFromFirstSource = [{ id: 'id1', val: 10 }]
+        const entityFromSecondSource = [{ id: 'id1', val: 12 }]
+        // WHEN
+        const output = formatService.groupById(entityFromFirstSource, entityFromSecondSource)
+        // THEN
+        const expected = [{ id: 'id1', entities: [entityFromFirstSource[0], entityFromSecondSource[0]] }]
+        expect(output).toEqual(expected)
+      })
+    })
+    describe('When id is only in firstSource', () => {
+      it('should format correctly the output', () => {
+        // GIVEN
+        const entityFromFirstSource = [{ id: 'id1', val: 10 }]
+        const entityFromSecondSource = []
+        // WHEN
+        const output = formatService.groupById(entityFromFirstSource, entityFromSecondSource)
+        // THEN
+        const expected = [{ id: 'id1', entities: [entityFromFirstSource[0], {}] }]
+        expect(output).toEqual(expected)
+      })
+    })
+    describe('When id is only in second source', () => {
+      it('should format correctly the output', () => {
+        // GIVEN
+        const entityFromFirstSource = []
+        const entityFromSecondSource = [{ id: 'id1', val: 10 }]
+        // WHEN
+        const output = formatService.groupById(entityFromFirstSource, entityFromSecondSource)
+        // THEN
+        const expected = [{ id: 'id1', entities: [{}, entityFromSecondSource[0]] }]
+        expect(output).toEqual(expected)
+      })
+    })
+    describe('When both source have different id entitiy', () => {
+      it('should format correctly the output', () => {
+        // GIVEN
+        const entityFromFirstSource = [{ id: 'id1', val: 5 }]
+        const entityFromSecondSource = [{ id: 'id2', val: 3 }]
+        // WHEN
+        const output = formatService.groupById(entityFromFirstSource, entityFromSecondSource)
+        // THEN
+        const expected = [
+          { id: 'id1', entities: [entityFromFirstSource[0], {}] },
+          { id: 'id2', entities: [{}, entityFromSecondSource[0]] }
+        ]
+        expect(output).toEqual(expected)
+      })
+    })
+    describe('When both source have similars and differents id entitiy', () => {
+      it('should format correctly the output', () => {
+        // GIVEN
+        const entityFromFirstSource = [
+          { id: 'id1', val: 5 },
+          { id: 'id2', val: 4 }
+        ]
+        const entityFromSecondSource = [
+          { id: 'id2', val: 3 },
+          { id: 'id3', val: 1 }
+        ]
+        // WHEN
+        const output = formatService.groupById(entityFromFirstSource, entityFromSecondSource)
+        // THEN
+        const expected = [
+          { id: 'id1', entities: [{ id: 'id1', val: 5 }, {}] },
+          {
+            id: 'id2',
+            entities: [
+              { id: 'id2', val: 4 },
+              { id: 'id2', val: 3 }
+            ]
+          },
+          { id: 'id3', entities: [{}, { id: 'id3', val: 1 }] }
+        ]
+        expect(output).toEqual(expected)
+      })
+    })
+  })
 })

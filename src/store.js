@@ -8,11 +8,15 @@ window.env = window.env || {}
 const state = {
   entities: { 0: null, 1: null },
   histories: { 0: [], 1: [] },
-  apiServers: [new HaystackApiService({ haystackApiHost: window.env.HAYSTACK_API_HOST }), null]
+  apiServers: [new HaystackApiService({ haystackApiHost: window.env.HAYSTACK_API_HOST }), null],
+  isMultiApi: false
 }
 export const mutations = {
   SET_ENTITIES(state, { entities, apiNumber }) {
     state.entities[apiNumber] = entities
+  },
+  SET_IS_MULTI_API(state, isMultiApi) {
+    state.isMultiApi = isMultiApi
   },
   SET_HISTORIES(state, { idHistories, apiNumber }) {
     state.histories[apiNumber] = idHistories
@@ -31,11 +35,15 @@ export const getters = {
   },
   histories(state) {
     return state.histories
+  },
+  isMultiApi(state) {
+    return state.isMultiApi
   }
 }
 export const actions = {
-  createApiServer(context, { haystackApiHost, apiNumber }) {
+  createApiServer(context, { haystackApiHost, apiNumber, isMultiApi }) {
     context.commit('SET_HAYSTACK_API', { apiNumber, haystackApiHost })
+    if (isMultiApi) context.commit('SET_IS_MULTI_API', true)
   },
   async fetchEntity(context, { entity, apiNumber }) {
     if (!state.apiServers[apiNumber]) return

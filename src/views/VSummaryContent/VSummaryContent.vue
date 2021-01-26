@@ -7,6 +7,7 @@
         label="API to query"
         outlined
         dense
+        background-color="white"
         :value="getDefaultApiHost"
         @change="updateAPI($event, 0)"
       />
@@ -15,6 +16,7 @@
         label="API to query"
         outlined
         dense
+        background-color="white"
         @change="updateAPI($event, 1)"
       />
     </div>
@@ -24,22 +26,39 @@
       label="Filter API"
       outlined
       dense
+      background-color="white"
       @change="updateFilter($event)"
     />
-    <h2>Result API 1</h2>
-    <c-entity-row v-for="row in entities[0]" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)" />
-    <h2>Result API 2</h2>
-    <c-entity-row v-for="row in entities[1]" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)" />
+    <div v-if="isMultiApi">
+      <c-multiple-entities-row
+        v-for="row in entitiesGroupedById"
+        :key="row.id"
+        :id="row.id"
+        :entities="row.entities"
+        :his="getHistories(row.id)"
+      ></c-multiple-entities-row>
+    </div>
+    <div v-else>
+      <c-entity-row
+        v-for="row in entities[0]"
+        :key="row.id"
+        :id="row.id"
+        :dataEntity="row"
+        :his="getHistory(row.id, 0)"
+      />
+    </div>
   </div>
 </template>
 
 <script>
+// <c-entity-row v-for="row in entities[1]" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)" />
 import { formatService } from '../../services'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.vue'
+import CMultipleEntitiesRow from '../../components/CMultipleEntitiesRow/CMultipleEntitiesRow.vue'
 
 export default {
   name: 'VSummaryContent',
-  components: { CEntityRow },
+  components: { CEntityRow, CMultipleEntitiesRow },
   data() {
     return {
       track: {
@@ -61,14 +80,29 @@ export default {
       return this.$store.getters.apiServers[0].haystackApiHost
     },
     getSecondApiHost() {
-      return this.$store.getters.apiServers[1] ? this.$store.getters.apiServers[1].haystackApiHost : ''
+      const apiHost = this.$store.getters.apiServers
+      return apiHost[1] ? apiHost[1].haystackApiHost : ''
+    },
+    isMultiApi() {
+      return this.$store.getters.isMultiApi
+    },
+    entitiesGroupedById() {
+      // eslint-disable-next-line
+      const entities = this.entities
+      return this.groupByIdEntities(entities[0], entities[0])
     }
   },
   methods: {
-    getHistory(idEntity) {
+    groupByIdEntities(entityFromFirstSource, entityFromSecondSource) {
+      return formatService.groupById(entityFromFirstSource, entityFromSecondSource)
+    },
+    getHistory(idEntity, sourceNumber) {
       const formattedId = formatService.formatIdEntity(idEntity)
-      if (!this.histories[0][formattedId]) return null
-      return this.histories[0][formattedId]
+      if (!this.histories[sourceNumber][formattedId]) return null
+      return this.histories[sourceNumber][formattedId]
+    },
+    getHistories(idEntity) {
+      return [this.getHistory(idEntity, 0), this.getHistory(idEntity, 1)]
     },
     async updateFilter(newFilter) {
       await Promise.all([
@@ -77,7 +111,7 @@ export default {
       ])
     },
     updateAPI(haystackApiHost, apiNumber) {
-      this.$store.dispatch('createApiServer', { haystackApiHost, apiNumber })
+      this.$store.dispatch('createApiServer', { haystackApiHost, apiNumber, isMultiApi: true })
     }
   },
   async beforeMount() {
@@ -89,10 +123,13 @@ export default {
 
 <style lang="scss">
 .summary-content {
-  margin-top: 20px;
+  padding-top: 25px;
 }
 .summary-content__text-field {
   padding-top: 10px !important;
   width: 30%;
+  .v-input--is-focused {
+    background: white !important;
+  }
 }
 </style>
