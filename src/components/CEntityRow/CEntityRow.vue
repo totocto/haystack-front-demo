@@ -125,7 +125,6 @@ export default {
       return item.substring(0, 2) === 'c:'
     },
     copyText(item) {
-      console.log('i am there')
       const id = item.value.split(' ')[0]
       const virtualElement = document.createElement('textarea')
       document.body.appendChild(virtualElement)
