@@ -1,7 +1,12 @@
 <template>
   <div class="multiple-entities-row">
-    <c-entity-row :id="id" :dataEntity="entities[0]" :his="his[0]"></c-entity-row>
-    <c-entity-row :id="id" :dataEntity="entities[1]" :his="his[1]" :isFromExternalSource="true"></c-entity-row>
+    <div class="multiple-entities-row__first-source">
+      <c-entity-row :id="id" :dataEntity="entities[0]" :his="his[0]"></c-entity-row>
+    </div>
+    <div class="separator"></div>
+    <div class="multiple-entities-row__second-source">
+      <c-entity-row :id="id" :dataEntity="entities[1]" :his="his[1]" :isFromExternalSource="true"></c-entity-row>
+    </div>
   </div>
 </template>
 
@@ -30,5 +35,21 @@ export default {
 .multiple-entities-row {
   background-color: white;
   border-radius: 15px;
+  .multiple-entities-row__first-source {
+    border-radius: 15px;
+    background-color: white;
+  }
+  .multiple-entities-row__second-source {
+    border-radius: 15px;
+    background-color: white;
+  }
+  .separator {
+    display: flex;
+    width: 60%;
+    height: 1px;
+    background-color: #c0c0c0;
+    margin: auto;
+    margin-bottom: 20px;
+  }
 }
 </style>

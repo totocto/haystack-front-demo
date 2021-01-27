@@ -45,6 +45,7 @@
         :id="row.id"
         :dataEntity="row"
         :his="getHistory(row.id, 0)"
+        class="summary-content__entity-row"
       />
     </div>
   </div>
@@ -133,7 +134,10 @@ export default {
   padding-top: 10px !important;
   width: 30%;
   .v-input--is-focused {
-    background: white !important;
+    background: white;
   }
+}
+.summary-content__entity-row {
+  background-color: white;
 }
 </style>

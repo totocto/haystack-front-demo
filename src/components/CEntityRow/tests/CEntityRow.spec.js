@@ -19,7 +19,7 @@ describe('CEntityRow.vue', () => {
       propsData: {
         id: 'id1',
         his: [{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }],
-        dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000' },
+        dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000', coordinate: 'c:12,12' },
         isFromExternalSource: false
       }
     })
@@ -116,12 +116,50 @@ describe('CEntityRow.vue', () => {
         const result = wrapper.vm.getEntityValue(dataEntityKey)
         expect(result).toBe('✓')
       })
+      it('should return brut value when coordinate', () => {
+        const dataEntityKey = 'coordinate'
+        const result = wrapper.vm.getEntityValue(dataEntityKey)
+        expect(result).toBe('c:12,12')
+      })
     })
     describe('#getUrlCoordinate', () => {
       it('should return formatted url to Google Maps', () => {
-        const coordinate = '145,13'
+        const coordinate = 'c:145,13'
         const result = wrapper.vm.getUrlCoordinate(coordinate)
-        expect(result).toBe(`http://www.google.com/maps/place/${coordinate}`)
+        const expected = 'http://www.google.com/maps/place/145,13'
+        expect(result).toBe(expected)
+      })
+    })
+    describe('#isId', () => {
+      it('should return true', () => {
+        const tag = 'id'
+        const result = wrapper.vm.isId(tag)
+        expect(result).toBeTrue()
+      })
+      it('should return false', () => {
+        const tag = 'anything'
+        const result = wrapper.vm.isId(tag)
+        expect(result).toBeFalse()
+      })
+    })
+    describe('#getIdName', () => {
+      it('should return formatted name of idEntity', () => {
+        const idEntity = 'p:demo-name The Real Name'
+        const result = wrapper.vm.getIdName(idEntity)
+        const expected = 'The Real Name'
+        expect(result).toBe(expected)
+      })
+    })
+    describe('#isCoordinate', () => {
+      it('should return true', () => {
+        const itemValue = 'c:i-am-a-coordinate'
+        const result = wrapper.vm.isCoordinate(itemValue)
+        expect(result).toBeTrue()
+      })
+      it('should return true', () => {
+        const itemValue = 'o:i-am-not-coordinate'
+        const result = wrapper.vm.isCoordinate(itemValue)
+        expect(result).toBeFalse()
       })
     })
   })

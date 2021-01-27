@@ -12,7 +12,16 @@
           :disable-pagination="true"
           :dense="true"
           item-class="row_class"
-        ></v-data-table>
+        >
+          <template v-slot:[`item.value`]="{ item }">
+            <a v-if="isCoordinate(item.value)" :href="getUrlCoordinate(item.value)">{{ item.value.substring(2) }}</a>
+            <div v-else-if="isId(item.tag)">
+              <span>{{ getIdName(item.value) }}</span>
+              <v-btn class="entity-row__click-button" @click="copyText(item)">copy ID</v-btn>
+            </div>
+            <span v-else>{{ item.value }}</span>
+          </template>
+        </v-data-table>
       </div>
       <c-chart
         data-test-history-chart
@@ -102,14 +111,37 @@ export default {
     }
   },
   methods: {
+    getIdName(idField) {
+      const entityName = idField.substring(2).split(' ')
+      entityName.shift()
+      return entityName.join(' ')
+    },
+    isId(tag) {
+      return tag === 'id'
+    },
+    isCoordinate(item) {
+      if (typeof item !== 'string') return false
+      // if (item.value.length < 4) return false
+      return item.substring(0, 2) === 'c:'
+    },
+    copyText(item) {
+      console.log('i am there')
+      const id = item.value.split(' ')[0]
+      const virtualElement = document.createElement('textarea')
+      document.body.appendChild(virtualElement)
+      virtualElement.value = id
+      virtualElement.select()
+      document.execCommand('copy')
+      document.body.removeChild(virtualElement)
+    },
     getUrlCoordinate(coordinate) {
-      return `http://www.google.com/maps/place/${coordinate}`
+      return `http://www.google.com/maps/place/${coordinate.substring(2)}`
     },
     getEntityValue(dataEntityKey) {
       const value = this.dataEntity[dataEntityKey]
       if (value === 'm:') return '✓'
       if (value.substring(0, 2) === 'n:') return Number(value.substring(2))
-      if (value.substring(0, 2) === 'c:') return this.getUrlCoordinate(value.substring(2))
+      if (value.substring(0, 2) === 'c:') return value
       if (value === '') return ''
       return value.substring(2)
     }
@@ -135,12 +167,22 @@ export default {
   display: flex;
   flex-direction: column;
   border-radius: 15px;
-  background-color: white;
   padding: 5px 0 10px 10px;
   margin-bottom: 30px;
 }
 .entity-row__chart {
   float: right;
   padding-left: 200px;
+}
+.entity-row__click-button {
+  float: right;
+}
+.v-btn {
+  text-transform: none;
+  height: 21px !important;
+  padding: 0 !important;
+  font-weight: bold;
+  letter-spacing: normal;
+  background-color: white !important;
 }
 </style>

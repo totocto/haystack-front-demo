@@ -4,6 +4,8 @@ class HaystackApiService {
   constructor({ haystackApiHost }) {
     this.haystackApiHost = haystackApiHost
   }
+  // Invoquer ops pour savoir les méthodes qui sont disponibles
+  // Invoquer format pour savoir si l'api est compatible avec le format JSON
 
   get api() {
     return axios.create({
@@ -16,11 +18,13 @@ class HaystackApiService {
     })
   }
 
+  // getEntity => read  and entity => filter
   async getEntity(entity) {
     const response = await this.api.get(`/read?filter=${entity}`)
     return response.data
   }
 
+  // getHistory => hisRead
   async getHistory(id, range = 'today') {
     const response = await this.api.get(`/hisRead?id=@${id}&range=${range}`)
     return response.data.rows

@@ -61,7 +61,7 @@ export default {
         enabled: false
       },
       credits: {
-        xenabled: false
+        enabled: false
       },
       tooltip: {
         valueSuffix: this.unit
