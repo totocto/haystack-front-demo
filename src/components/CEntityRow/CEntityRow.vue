@@ -15,8 +15,8 @@
         >
           <template v-slot:[`item.value`]="{ item }">
             <a v-if="isCoordinate(item.value)" :href="getUrlCoordinate(item.value)">{{ item.value.substring(2) }}</a>
-            <div v-else-if="isId(item.tag)">
-              <span>{{ getIdName(item.value) }}</span>
+            <div v-else-if="isRef(item.value)">
+              <span>{{ getRefName(item.value) }}</span>
               <v-btn class="entity-row__click-button" @click="copyText(item)">copy ID</v-btn>
             </div>
             <span v-else>{{ item.value }}</span>
@@ -111,13 +111,14 @@ export default {
     }
   },
   methods: {
-    getIdName(idField) {
+    getRefName(idField) {
       const entityName = idField.substring(2).split(' ')
       entityName.shift()
       return entityName.join(' ')
     },
-    isId(tag) {
-      return tag === 'id'
+    isRef(item) {
+      if (typeof item !== 'string') return false
+      return item.substring(0, 2) === 'p:'
     },
     isCoordinate(item) {
       if (typeof item !== 'string') return false
@@ -125,7 +126,7 @@ export default {
       return item.substring(0, 2) === 'c:'
     },
     copyText(item) {
-      const id = item.value.split(' ')[0]
+      const id = `@${item.value.split(' ')[0]}`
       const virtualElement = document.createElement('textarea')
       document.body.appendChild(virtualElement)
       virtualElement.value = id

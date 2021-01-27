@@ -7,7 +7,7 @@ import VSummaryContent from './views/VSummaryContent/VSummaryContent.vue'
 Vue.use(Router)
 
 const router = new Router({
-  mode: 'history',
+  // mode: 'history',
   routes: [
     {
       path: '/',

@@ -4,6 +4,7 @@
   "description": "front-demo-haystack",
   "author": "Théo ANDRO",
   "scripts": {
+    "build": "vue-cli-service build",
     "serve": "PORT=8085 vue-cli-service serve",
     "test:unit": "NODE_ENV=test vue-cli-service test:unit --no-cache",
     "lint": "vue-cli-service lint --no-cache --no-fix && yarn stylelint 'src/**/*.scss' --syntax scss --no-cache",

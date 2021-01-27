@@ -130,22 +130,22 @@ describe('CEntityRow.vue', () => {
         expect(result).toBe(expected)
       })
     })
-    describe('#isId', () => {
+    describe('#isRef', () => {
       it('should return true', () => {
-        const tag = 'id'
-        const result = wrapper.vm.isId(tag)
+        const value = 'p:anything'
+        const result = wrapper.vm.isRef(value)
         expect(result).toBeTrue()
       })
       it('should return false', () => {
-        const tag = 'anything'
-        const result = wrapper.vm.isId(tag)
+        const value = 'anything'
+        const result = wrapper.vm.isRef(value)
         expect(result).toBeFalse()
       })
     })
-    describe('#getIdName', () => {
+    describe('#getRefName', () => {
       it('should return formatted name of idEntity', () => {
         const idEntity = 'p:demo-name The Real Name'
-        const result = wrapper.vm.getIdName(idEntity)
+        const result = wrapper.vm.getRefName(idEntity)
         const expected = 'The Real Name'
         expect(result).toBe(expected)
       })

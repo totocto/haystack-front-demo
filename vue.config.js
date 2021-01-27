@@ -22,7 +22,7 @@ module.exports = {
         runtimeCaching: [
           {
             // To match cross-origin requests, use a RegExp that matches
-            // the start of the origin:
+            // the start of the origin:assetsPublicPath
             urlPattern: new RegExp(`^${urlAPIToCache}`),
             handler: 'networkFirst',
             options: {
