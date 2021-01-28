@@ -1,7 +1,6 @@
 <template>
   <div class="entity-row__container">
-    <h2 v-if="!isFromExternalSource" data-test-entity-title class="entity-row__title">{{ entityName }}</h2>
-    <h3 v-if="isMultiApi" data-test-entity-subtitle class="entity-row__subtitle">{{ subtitleWindow }}</h3>
+    <h2 data-test-entity-title class="entity-row__title">{{ entityName }}</h2>
     <div class="content-container">
       <div class="entity-row__table">
         <v-data-table
@@ -17,7 +16,7 @@
             <a v-if="isCoordinate(item.value)" :href="getUrlCoordinate(item.value)">{{ item.value.substring(2) }}</a>
             <div v-else-if="isRef(item.value)">
               <span>{{ getRefName(item.value) }}</span>
-              <v-btn class="entity-row__click-button" @click="copyText(item)">copy ID</v-btn>
+              <v-btn class="entity-row__click-button" @click="copyText(item)">copy Ref</v-btn>
             </div>
             <span v-else>{{ item.value }}</span>
           </template>
@@ -26,7 +25,7 @@
       <c-chart
         data-test-history-chart
         class="entity-row__chart"
-        v-if="his"
+        v-if="displayChart"
         :id="chartId"
         :categories="categories"
         :data="data"
@@ -59,6 +58,10 @@ export default {
     isFromExternalSource: {
       type: Boolean,
       default: false
+    },
+    isDataLoaded: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -82,14 +85,11 @@ export default {
         return { tag: key, value: value, row_class: value === '✓' ? `${key} haystack-marker` : key }
       })
     },
-    subtitleWindow() {
-      return this.isFromExternalSource ? 'Résultat de la seconde API' : 'Résultat  de la première API'
-    },
-    isMultiApi() {
-      return this.$store.getters.isMultiApi
-    },
     entityId() {
       return this.id.split(' ')[0]
+    },
+    displayChart() {
+      return this.his.filter(his => his).length > 0 && this.isDataLoaded
     },
     chartId() {
       return this.isFromExternalSource ? `${this.id}-external` : this.id
@@ -98,10 +98,10 @@ export default {
       return this.id.replace(`${this.entityId} `, '')
     },
     categories() {
-      return formatService.formatXAxis(this.his)
+      return this.his.map(historic => (historic ? formatService.formatXAxis(historic) : null))
     },
     data() {
-      return formatService.formatYAxis(this.his)
+      return this.his.map(historic => (historic ? formatService.formatYAxis(historic) : null))
     },
     dataEntityKeys() {
       return Object.keys(this.dataEntity)

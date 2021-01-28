@@ -37,6 +37,11 @@ export default {
       default: ''
     }
   },
+  data() {
+    return {
+      colors: ['#DC143C', '#0000ff']
+    }
+  },
   mounted() {
     this.chart = Highcharts.chart(this.id, {
       title: {
@@ -55,7 +60,7 @@ export default {
         title: {
           text: this.xLabel
         },
-        categories: this.categories
+        categories: this.categories[0]
       },
       legend: {
         enabled: false
@@ -66,12 +71,11 @@ export default {
       tooltip: {
         valueSuffix: this.unit
       },
-      series: [
-        {
-          data: this.data,
-          color: '#DC143C'
-        }
-      ]
+      series: this.data
+        .filter(data => data)
+        .map((data, index) => {
+          return { data, color: this.colors[index] }
+        })
     })
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import dataUtils from './data.utils'
 
 const formatService = {
@@ -15,6 +16,42 @@ const formatService = {
   },
   formatYAxis: histories => {
     return histories.map(history => dataUtils.formatVal(history.val))
+  },
+  renameObjectKey(object, oldKey, newKey) {
+    Object.defineProperty(object, newKey, Object.getOwnPropertyDescriptor(object, oldKey))
+    delete object[oldKey]
+    return object
+  },
+  findSimilarObjectsKeyWithDifferentsValues(object1, object2) {
+    const similarKeysWithDifferentsValues = []
+    Object.keys(object1).map(key => {
+      if (object2.hasOwnProperty(key) && object2[key] !== object1[key]) {
+        similarKeysWithDifferentsValues.push(key)
+      }
+    })
+    return similarKeysWithDifferentsValues
+  },
+  groupByIdBis: (entitiesFromFirstSource, entitiesFromSecondSource) => {
+    const mergeEntities = []
+    entitiesFromFirstSource.map(entityFromFirstSource => {
+      const idFromSource = entityFromFirstSource.id
+      entitiesFromSecondSource.map(entityFromSecondSource => {
+        if (idFromSource === entityFromSecondSource.id) {
+          const keysWithDifferentValues = formatService.findSimilarObjectsKeyWithDifferentsValues(
+            entityFromFirstSource,
+            entityFromSecondSource
+          )
+          keysWithDifferentValues.map(key => {
+            entityFromFirstSource = formatService.renameObjectKey(entityFromFirstSource, key, `${key}_1`)
+            entityFromSecondSource = formatService.renameObjectKey(entityFromSecondSource, key, `${key}_2`)
+          })
+          mergeEntities.push({ ...entityFromFirstSource, ...entityFromSecondSource })
+          entitiesFromSecondSource = entitiesFromSecondSource.filter(entity => entity.id !== idFromSource)
+          entitiesFromFirstSource = entitiesFromSecondSource.filter(entity => entity.id !== idFromSource)
+        }
+      })
+    })
+    return mergeEntities.concat(entitiesFromFirstSource.concat(entitiesFromSecondSource))
   },
   groupById: (entitiesFromFirstSource, entitiesFromSecondSource) => {
     let groupByIdFromSecondSource = []

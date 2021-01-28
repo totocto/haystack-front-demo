@@ -18,21 +18,23 @@ describe('CEntityRow.vue', () => {
       },
       propsData: {
         id: 'id1',
-        his: [{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }],
+        his: [[{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }], []],
         dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000', coordinate: 'c:12,12' },
-        isFromExternalSource: false
+        isFromExternalSource: false,
+        isDataLoaded: true
       }
     })
   })
   it('should mount the component', () => {
     expect(wrapper).toBeDefined()
   })
-  describe('When there is only one api', () => {
-    it('should display the entity title', () => {
-      expect(wrapper.find('[data-test-entity-title]').exists()).toBeTrue()
-    })
+  it('should display the entity title', () => {
+    expect(wrapper.find('[data-test-entity-title]').exists()).toBeTrue()
   })
-  describe('When there is two apis', () => {
+  it('should display the entity title', () => {
+    expect(wrapper.find('[data-test-entity-title]').exists()).toBeTrue()
+  })
+  describe('When entity has a his marker', () => {
     beforeEach(() => {
       wrapper = shallowMount(CEntityRow, {
         stubs: ['v-data-table'],
@@ -45,58 +47,47 @@ describe('CEntityRow.vue', () => {
         },
         propsData: {
           id: 'id1',
-          his: null,
+          his: [[{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }], null],
           dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000' },
-          isFromExternalSource: false
+          isFromExternalSource: false,
+          isDataLoaded: true
         }
       })
     })
-    describe('When this is the main api', () => {
-      it('should display the entity title', () => {
-        expect(wrapper.find('[data-test-entity-title]').exists()).toBeTrue()
-      })
-      it('should display subtitle', () => {
-        expect(wrapper.find('[data-test-entity-subtitle]').exists()).toBeTrue()
-      })
-    })
-    describe('When entity has a his marker', () => {
-      beforeEach(() => {
-        wrapper = shallowMount(CEntityRow, {
-          stubs: ['v-data-table'],
-          mocks: {
-            $store: new Vuex.Store({
-              getters: {
-                isMultiApi: () => true
-              }
-            })
-          },
-          propsData: {
-            id: 'id1',
-            his: [{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }],
-            dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000' },
-            isFromExternalSource: false
-          }
-        })
-      })
+    describe('When data are loaded', () => {
       it('should display a chart', () => {
         expect(wrapper.find('[data-test-history-chart]').exists()).toBeTrue()
       })
     })
-    describe('When entity has not a his marker', () => {
+    describe('When data are not loaded', () => {
       it('should not display a chart', () => {
-        expect(wrapper.find('[data-test-history-chart]').exists()).toBeFalse()
+        wrapper.setProps({ isDataLoaded: false })
+        expect(wrapper.find('[data-test-history-chart]').exists()).toBeTrue()
       })
     })
-    describe('When this is the second api', () => {
-      beforeEach(() => {
-        wrapper.setProps({ isFromExternalSource: true })
+  })
+  describe('When entity has not a his marker', () => {
+    beforeEach(() => {
+      wrapper = shallowMount(CEntityRow, {
+        stubs: ['v-data-table'],
+        mocks: {
+          $store: new Vuex.Store({
+            getters: {
+              isMultiApi: () => true
+            }
+          })
+        },
+        propsData: {
+          id: 'id1',
+          his: [null, null],
+          dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000' },
+          isFromExternalSource: false,
+          isDataLoaded: true
+        }
       })
-      it('should not display the entity title', () => {
-        expect(wrapper.find('[data-test-entity-title]').exists()).toBeFalse()
-      })
-      it('should display subtitle', () => {
-        expect(wrapper.find('[data-test-entity-subtitle]').exists()).toBeTrue()
-      })
+    })
+    it('should not display a chart', () => {
+      expect(wrapper.find('[data-test-history-chart]').exists()).toBeFalse()
     })
   })
   describe('#methods', () => {

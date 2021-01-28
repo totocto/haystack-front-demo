@@ -29,25 +29,15 @@
       background-color="white"
       @change="updateFilter($event)"
     />
-    <div v-if="isMultiApi">
-      <c-multiple-entities-row
-        v-for="row in entitiesGroupedById"
-        :key="row.id"
-        :id="row.id"
-        :entities="row.entities"
-        :his="getHistories(row.id)"
-      ></c-multiple-entities-row>
-    </div>
-    <div v-else>
-      <c-entity-row
-        v-for="row in entities[0]"
-        :key="row.id"
-        :id="row.id"
-        :dataEntity="row"
-        :his="getHistory(row.id, 0)"
-        class="summary-content__entity-row"
-      />
-    </div>
+    <c-entity-row
+      v-for="row in entitiesGroupedById"
+      :key="row.id"
+      :id="row.id"
+      :dataEntity="row"
+      :his="getHistories(row.id)"
+      :isDataLoaded="isDataLoaded"
+      class="summary-content__entity-row"
+    />
   </div>
 </template>
 
@@ -55,13 +45,13 @@
 // <c-entity-row v-for="row in entities[1]" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)" />
 import { formatService } from '../../services'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.vue'
-import CMultipleEntitiesRow from '../../components/CMultipleEntitiesRow/CMultipleEntitiesRow.vue'
 
 export default {
   name: 'VSummaryContent',
-  components: { CEntityRow, CMultipleEntitiesRow },
+  components: { CEntityRow },
   data() {
     return {
+      isDataLoaded: false,
       filterApi: ''
     }
   },
@@ -82,9 +72,6 @@ export default {
       const apiHost = this.$store.getters.apiServers
       return apiHost[1] ? apiHost[1].haystackApiHost : ''
     },
-    isMultiApi() {
-      return this.$store.getters.isMultiApi
-    },
     entitiesGroupedById() {
       // eslint-disable-next-line
       const entities = this.entities
@@ -93,7 +80,7 @@ export default {
   },
   methods: {
     groupByIdEntities(entityFromFirstSource, entityFromSecondSource) {
-      return formatService.groupById(entityFromFirstSource, entityFromSecondSource)
+      return formatService.groupByIdBis(entityFromFirstSource, entityFromSecondSource)
     },
     getHistory(idEntity, sourceNumber) {
       const formattedId = formatService.formatIdEntity(idEntity)
@@ -111,17 +98,19 @@ export default {
       ])
     },
     async updateAPI(haystackApiHost, apiNumber) {
+      this.isDataLoaded = false
       this.$store.dispatch('createApiServer', { haystackApiHost, apiNumber })
       await Promise.all([
         await this.$store.dispatch('fetchAllEntity', { entity: this.filterApi }),
         await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
       ])
-      this.$store.dispatch('activateMultiApi', { isMultiApi: true })
+      this.isDataLoaded = true
     }
   },
   async beforeMount() {
     await this.$store.dispatch('fetchAllEntity', { entity: '' })
     await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
+    this.isDataLoaded = true
   }
 }
 </script>

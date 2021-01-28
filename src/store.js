@@ -6,7 +6,7 @@ import HaystackApiService from './services/haystackApi.service'
 Vue.use(Vuex)
 window.env = window.env || {}
 const state = {
-  entities: { 0: null, 1: null },
+  entities: { 0: [], 1: [] },
   histories: { 0: [], 1: [] },
   apiServers: [new HaystackApiService({ haystackApiHost: window.env.HAYSTACK_API_HOST }), null],
   isMultiApi: false

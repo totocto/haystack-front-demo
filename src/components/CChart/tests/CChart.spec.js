@@ -11,7 +11,9 @@ describe('CChart.vue', () => {
     Highcharts.chart = jest.fn()
     wrapper = shallowMount(CChart, {
       propsData: {
-        id: 'id1'
+        id: 'id1',
+        data: [[1, 2, 3], null],
+        categories: [['month1', 'month2', 'month3'], null]
       }
     })
   })
