@@ -22,17 +22,19 @@ describe('VSummaryContent.vue', () => {
     }
     wrapper = shallowMount(VSummaryContent, {
       stubs: globalStubs,
+      data() {
+        return {
+          isDataLoaded: true
+        }
+      },
       mocks: {
         $store: new Vuex.Store({
           getters: {
-            apiServers: () => ['an api', null],
+            apiServers: () => ['an api'],
             histories: () => {
               return [{ 'p:thisisademo1': ['history1'] }, []]
             },
-            entities: () => [
-              [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }],
-              []
-            ]
+            entities: () => [[{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }]]
           },
           actions
         })
@@ -54,7 +56,37 @@ describe('VSummaryContent.vue', () => {
     expect(actions.fetchAllHistories.args[0][1]).toEqual({ idsEntity: ['p:thisisademo1'] })
   })
   it('should create CEntityRow component', () => {
+    expect(wrapper.vm.$data.isDataLoaded).toBeTrue()
     expect(wrapper.findComponent(CEntityRow).exists()).toBeTrue()
+  })
+  describe('When data are not loaded', () => {
+    beforeEach(() => {
+      wrapper = shallowMount(VSummaryContent, {
+        stubs: globalStubs,
+        data() {
+          return {
+            isDataLoaded: false
+          }
+        },
+        mocks: {
+          $store: new Vuex.Store({
+            getters: {
+              apiServers: () => ['an api'],
+              histories: () => {
+                return [{ 'p:thisisademo1': ['history1'] }, []]
+              },
+              entities: () => [
+                [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }]
+              ]
+            },
+            actions
+          })
+        }
+      })
+    })
+    it('should not display CEntityRow', () => {
+      expect(wrapper.findComponent(CEntityRow).exists()).toBeFalse()
+    })
   })
   describe('methods', () => {
     describe('#getHistory', () => {
@@ -73,11 +105,14 @@ describe('VSummaryContent.vue', () => {
               getters: {
                 apiServers: () => ['an api', null],
                 histories: () => {
-                  return [{ 'p:thisisademo1': ['history1'] }, { 'p:thisisademo1': ['history2'] }]
+                  return [
+                    { 'p:thisisademo1': ['history1'], 'p:thisisademo2': ['history2'] },
+                    { 'p:thisisademo1': ['history1_bis'] }
+                  ]
                 },
                 entities: () => [
                   [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }],
-                  [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }]
+                  [{ id: 'r:p:thisisademo2 demoEngie1', his: 'm:' }]
                 ]
               },
               actions
@@ -85,10 +120,15 @@ describe('VSummaryContent.vue', () => {
           }
         })
       })
+      it('should return histories associated with entityId', () => {
+        const idEntity = 'r:p:thisisademo2 demoEngie1'
+        const historyResult = wrapper.vm.getHistories(idEntity)
+        expect(historyResult).toEqual([['history2'], null])
+      })
       it('should return histories associated to the entityId', () => {
         const idEntity = 'r:p:thisisademo1 demoEngie1'
         const historyResult = wrapper.vm.getHistories(idEntity)
-        expect(historyResult).toEqual([['history1'], ['history2']])
+        expect(historyResult).toEqual([['history1'], ['history1_bis']])
       })
     })
     describe('#updateFilter', () => {

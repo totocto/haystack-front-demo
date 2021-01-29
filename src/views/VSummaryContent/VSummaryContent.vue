@@ -29,20 +29,21 @@
       background-color="white"
       @change="updateFilter($event)"
     />
-    <c-entity-row
-      v-for="row in entitiesGroupedById"
-      :key="row.id"
-      :id="row.id"
-      :dataEntity="row"
-      :his="getHistories(row.id)"
-      :isDataLoaded="isDataLoaded"
-      class="summary-content__entity-row"
-    />
+    <div v-if="isDataLoaded">
+      <c-entity-row
+        v-for="row in entitiesGroupedById"
+        :key="row.id"
+        :id="row.id"
+        :dataEntity="row"
+        :his="getHistories(row.id)"
+        :isDataLoaded="isDataLoaded"
+        class="summary-content__entity-row"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-// <c-entity-row v-for="row in entities[1]" :key="row.id" :id="row.id" :dataEntity="row" :his="getHistory(row.id)" />
 import { formatService } from '../../services'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.vue'
 
@@ -60,7 +61,11 @@ export default {
       return this.$store.getters.entities
     },
     idsWithHis() {
-      return this.entities[0].filter(entity => entity.his).map(entity => formatService.formatIdEntity(entity.id))
+      return this.entitiesGroupedById
+        .filter(entity => entity.his)
+        .map(entity => {
+          return formatService.formatIdEntity(entity.id)
+        })
     },
     histories() {
       return this.$store.getters.histories
@@ -68,19 +73,17 @@ export default {
     getDefaultApiHost() {
       return this.$store.getters.apiServers[0].haystackApiHost
     },
-    getSecondApiHost() {
-      const apiHost = this.$store.getters.apiServers
-      return apiHost[1] ? apiHost[1].haystackApiHost : ''
-    },
     entitiesGroupedById() {
       // eslint-disable-next-line
-      const entities = this.entities
-      return this.groupByIdEntities(entities[0], entities[1])
+      const { entities } = this.$store.getters
+      if (this.entities.length === 1) return entities[0]
+      return this.groupByIdEntities(entities)
+      // return this.groupByIdEntities(entities[0], entities[1])
     }
   },
   methods: {
     groupByIdEntities(entityFromFirstSource, entityFromSecondSource) {
-      return formatService.groupByIdBis(entityFromFirstSource, entityFromSecondSource)
+      return formatService.groupAllEntitiesById(entityFromFirstSource, entityFromSecondSource)
     },
     getHistory(idEntity, sourceNumber) {
       const formattedId = formatService.formatIdEntity(idEntity)
@@ -88,7 +91,9 @@ export default {
       return this.histories[sourceNumber][formattedId]
     },
     getHistories(idEntity) {
-      return [this.getHistory(idEntity, 0), this.getHistory(idEntity, 1)]
+      if (this.histories.length === 1) return [this.getHistory(idEntity, 0)]
+      // eslint-disable-next-line
+      return this.histories.map((history, index) => this.getHistory(idEntity, index))
     },
     async updateFilter(newFilter) {
       this.filterApi = newFilter

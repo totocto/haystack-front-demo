@@ -4,7 +4,7 @@ import sinon from 'sinon'
 import { actions, getters, mutations } from '../store'
 import HaystackApiService from '../services/haystackApi.service'
 
-const { SET_ENTITIES, SET_HISTORIES, SET_IS_MULTI_API, SET_HAYSTACK_API } = mutations
+const { SET_ENTITIES, SET_HISTORIES, SET_HAYSTACK_API } = mutations
 const entities = { rows: ['entity1', 'entity2'] }
 describe('store', () => {
   beforeAll(() => {
@@ -16,18 +16,22 @@ describe('store', () => {
   describe('mutations', () => {
     describe('#SET_ENTITIES', () => {
       it('should set entities', () => {
-        const state = { entities: [null, null] }
+        const state = { entities: [[]] }
         const entities = ['entity1', 'entity2']
         SET_ENTITIES(state, { entities, apiNumber: 0 })
-        expect(state.entities).toEqual([entities, null])
+        expect(state.entities).toEqual([entities])
       })
-    })
-    describe('#SET_IS_MULTI_API', () => {
-      it('should set boolean isMultiApi', () => {
-        const state = { isMultiApi: false }
-        const isMultiApi = true
-        SET_IS_MULTI_API(state, isMultiApi)
-        expect(state.isMultiApi).toEqual(true)
+      it('should set entities', () => {
+        const state = { entities: [['entity1']] }
+        const entities = ['entity1', 'entity2']
+        SET_ENTITIES(state, { entities, apiNumber: 1 })
+        expect(state.entities).toEqual([['entity1'], entities])
+      })
+      it('should set entities', () => {
+        const state = { entities: [['entity1'], ['entity2']] }
+        const entities = ['entity1', 'entity2']
+        SET_ENTITIES(state, { entities, apiNumber: 1 })
+        expect(state.entities).toEqual([['entity1'], entities])
       })
     })
     describe('#SET_HISTORIES', () => {
@@ -39,12 +43,23 @@ describe('store', () => {
       })
     })
     describe('#SET_HAYSTACK_API', () => {
-      it('should instanced a new haystackApi', () => {
-        const state = { apiServers: [] }
-        const haystackApiHost = 'anHost'
-        const expected = new HaystackApiService({ haystackApiHost })
-        SET_HAYSTACK_API(state, { haystackApiHost, apiNumber: 0 })
-        expect(state.apiServers).toEqual([expected])
+      describe('When there is no available Api servers', () => {
+        it('should instanced a new haystackApi', () => {
+          const state = { apiServers: [] }
+          const haystackApiHost = 'anHost'
+          const expected = new HaystackApiService({ haystackApiHost })
+          SET_HAYSTACK_API(state, { haystackApiHost })
+          expect(state.apiServers).toEqual([expected])
+        })
+      })
+      describe('When there is already api servers', () => {
+        it('should instanced a new haystackApi and add it in state', () => {
+          const state = { apiServers: ['an api server'] }
+          const haystackApiHost = 'anHost'
+          const expected = ['an api server', new HaystackApiService({ haystackApiHost })]
+          SET_HAYSTACK_API(state, { haystackApiHost })
+          expect(state.apiServers).toEqual(expected)
+        })
       })
     })
   })
@@ -74,13 +89,6 @@ describe('store', () => {
         expect(apiServersStored).toEqual(apiServers)
       })
     })
-    describe('#isMultiApi', () => {
-      it('should return isMultiApi', () => {
-        const isMultiApi = true
-        const state = { isMultiApi }
-        expect(getters.isMultiApi(state)).toEqual(isMultiApi)
-      })
-    })
   })
   describe('actions', () => {
     let commit
@@ -95,19 +103,10 @@ describe('store', () => {
     })
     describe('#createApiServer', () => {
       it('should commit a new apiServer', async () => {
-        const apiNumber = 1
         const haystackApiHost = 'aHost'
-        await actions.createApiServer({ commit }, { haystackApiHost, apiNumber })
+        await actions.createApiServer({ commit }, { haystackApiHost })
         expect(commit).toHaveBeenCalled()
-        expect(commit).toHaveBeenNthCalledWith(1, 'SET_HAYSTACK_API', { haystackApiHost, apiNumber })
-      })
-    })
-    describe('#activateMultiApi', () => {
-      it('should commit a new apiServer', async () => {
-        const isMultiApi = true
-        await actions.activateMultiApi({ commit }, { isMultiApi })
-        expect(commit).toHaveBeenCalled()
-        expect(commit).toHaveBeenNthCalledWith(1, 'SET_IS_MULTI_API', { isMultiApi })
+        expect(commit).toHaveBeenNthCalledWith(1, 'SET_HAYSTACK_API', { haystackApiHost })
       })
     })
     describe('#fetchEntity', () => {
@@ -117,14 +116,6 @@ describe('store', () => {
           const apiNumber = 0
           await actions.fetchEntity({ commit }, { entity, apiNumber })
           expect(commit).toHaveBeenNthCalledWith(1, 'SET_ENTITIES', { entities: entities.rows, apiNumber: 0 })
-        })
-      })
-      describe('When api does not exist', () => {
-        it('should not commit news entities to the second api if no api declared', async () => {
-          const entity = 'site'
-          const apiNumber = 1
-          await actions.fetchEntity({ commit }, { entity, apiNumber })
-          expect(commit).not.toHaveBeenCalled()
         })
       })
     })
@@ -138,31 +129,43 @@ describe('store', () => {
           expect(commit).toHaveBeenNthCalledWith(1, 'SET_HISTORIES', expected)
         })
       })
-      describe('When Api exists', () => {
-        it('should not commit news histories to the second api', async () => {
-          const idsEntity = ['id1', 'id2']
-          const apiNumber = 1
-          await actions.fetchHistories({ commit }, { idsEntity, apiNumber })
-          expect(commit).not.toHaveBeenCalled()
-        })
-      })
     })
     describe('#fetchAllHistories', () => {
-      it('should fetch histories for both api', async () => {
+      it('should fetch histories for 2 api when there is 2 api', async () => {
+        const getters = { apiServers: ['api1', 'api2'] }
         const idsEntity = ['id1', 'id2']
-        await actions.fetchAllHistories({ dispatch }, { idsEntity })
+        await actions.fetchAllHistories({ dispatch, getters }, { idsEntity })
         expect(dispatch).toHaveBeenCalledTimes(2)
         expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchHistories', { apiNumber: 0, idsEntity: ['id1', 'id2'] })
         expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchHistories', { apiNumber: 1, idsEntity: ['id1', 'id2'] })
       })
+      it('should fetch histories for 3 api when there is 3 api', async () => {
+        const getters = { apiServers: ['api1', 'api2', 'api3'] }
+        const idsEntity = ['id1', 'id2']
+        await actions.fetchAllHistories({ dispatch, getters }, { idsEntity })
+        expect(dispatch).toHaveBeenCalledTimes(3)
+        expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchHistories', { apiNumber: 0, idsEntity: ['id1', 'id2'] })
+        expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchHistories', { apiNumber: 1, idsEntity: ['id1', 'id2'] })
+        expect(dispatch).toHaveBeenNthCalledWith(3, 'fetchHistories', { apiNumber: 2, idsEntity: ['id1', 'id2'] })
+      })
     })
     describe('#fetchAllEntity', () => {
-      it('should fetch entities for both api', async () => {
+      it('should fetch entities for 2 api when there is 2 api servers', async () => {
         const entity = 'site'
-        await actions.fetchAllEntity({ dispatch }, { entity })
+        const getters = { apiServers: ['api1', 'api2'] }
+        await actions.fetchAllEntity({ dispatch, getters }, { entity })
         expect(dispatch).toHaveBeenCalledTimes(2)
         expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchEntity', { apiNumber: 0, entity: 'site' })
         expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchEntity', { apiNumber: 1, entity: 'site' })
+      })
+      it('should fetch entities for 3 api when there is 3 api servers', async () => {
+        const entity = 'site'
+        const getters = { apiServers: ['api1', 'api2', 'api3'] }
+        await actions.fetchAllEntity({ dispatch, getters }, { entity })
+        expect(dispatch).toHaveBeenCalledTimes(3)
+        expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchEntity', { apiNumber: 0, entity: 'site' })
+        expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchEntity', { apiNumber: 1, entity: 'site' })
+        expect(dispatch).toHaveBeenNthCalledWith(3, 'fetchEntity', { apiNumber: 2, entity: 'site' })
       })
     })
   })

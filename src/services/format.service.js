@@ -31,7 +31,11 @@ const formatService = {
     })
     return similarKeysWithDifferentsValues
   },
-  groupByIdBis: (entitiesFromFirstSource, entitiesFromSecondSource) => {
+  groupAllEntitiesById: entitiesFromAllSources => {
+    const initialEntities = entitiesFromAllSources.shift()
+    return entitiesFromAllSources.reduce((acc, entities) => formatService.GroupTwoEntitiesById(acc, entities), initialEntities)
+  },
+  GroupTwoEntitiesById: (entitiesFromFirstSource, entitiesFromSecondSource) => {
     const mergeEntities = []
     entitiesFromFirstSource.map(entityFromFirstSource => {
       const idFromSource = entityFromFirstSource.id
@@ -52,33 +56,6 @@ const formatService = {
       })
     })
     return mergeEntities.concat(entitiesFromFirstSource.concat(entitiesFromSecondSource))
-  },
-  groupById: (entitiesFromFirstSource, entitiesFromSecondSource) => {
-    let groupByIdFromSecondSource = []
-    let groupedByIdFromFirstSource = []
-    let groupById = []
-    if (entitiesFromFirstSource.length !== 0) {
-      groupedByIdFromFirstSource = entitiesFromFirstSource.map(entityFromSource => {
-        const idFromSource = entityFromSource.id
-        // eslint-disable-next-line
-        const entityFromExternalSourceWithSameId = entitiesFromSecondSource.map(entityFromExternalSource => {
-          if (entityFromExternalSource.id === idFromSource) return entityFromExternalSource
-        })[0]
-        // eslint-disable-next-line
-        entitiesFromSecondSource = entitiesFromSecondSource.filter(entity => entity.id !== idFromSource)
-        return {
-          id: idFromSource,
-          entities: [entityFromSource, entityFromExternalSourceWithSameId || {}]
-        }
-      })
-    }
-    if (entitiesFromSecondSource.length !== 0) {
-      groupByIdFromSecondSource = entitiesFromSecondSource.map(entity => {
-        return { id: entity.id, entities: [{}, entity] }
-      })
-    }
-    groupById = groupedByIdFromFirstSource.concat(groupByIdFromSecondSource)
-    return groupById
   }
 }
 

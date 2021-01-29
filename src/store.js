@@ -6,24 +6,27 @@ import HaystackApiService from './services/haystackApi.service'
 Vue.use(Vuex)
 window.env = window.env || {}
 const state = {
-  entities: { 0: [], 1: [] },
-  histories: { 0: [], 1: [] },
-  apiServers: [new HaystackApiService({ haystackApiHost: window.env.HAYSTACK_API_HOST }), null],
-  isMultiApi: false
+  entities: [[]],
+  histories: [{}],
+  apiServers: [new HaystackApiService({ haystackApiHost: window.env.HAYSTACK_API_HOST })]
 }
 export const mutations = {
   SET_ENTITIES(state, { entities, apiNumber }) {
-    state.entities[apiNumber] = entities
-  },
-  SET_IS_MULTI_API(state, isMultiApi) {
-    state.isMultiApi = isMultiApi
+    const newEntities = state.entities.slice()
+    // eslint-disable-next-line
+    newEntities.length < apiNumber ? newEntities.push(entities) : (newEntities[apiNumber] = entities)
+    state.entities = newEntities
   },
   SET_HISTORIES(state, { idHistories, apiNumber }) {
-    state.histories[apiNumber] = idHistories
+    const newHistories = state.histories.slice()
+    // eslint-disable-next-line
+    newHistories.length < apiNumber + 1 ? newHistories.push(idHistories) : (newHistories[apiNumber] = idHistories)
+    state.histories = newHistories
   },
-  SET_HAYSTACK_API(state, { apiNumber, haystackApiHost }) {
-    const newApi = new HaystackApiService({ haystackApiHost })
-    state.apiServers[apiNumber] = newApi
+  SET_HAYSTACK_API(state, { haystackApiHost }) {
+    const newApiServers = state.apiServers.slice()
+    newApiServers.push(new HaystackApiService({ haystackApiHost }))
+    state.apiServers = newApiServers
   }
 }
 export const getters = {
@@ -36,44 +39,46 @@ export const getters = {
   histories(state) {
     return state.histories
   },
-  isMultiApi(state) {
-    return state.isMultiApi
+  apiNumber(state) {
+    return state.apiServers.length
   }
 }
 export const actions = {
-  createApiServer(context, { haystackApiHost, apiNumber }) {
-    context.commit('SET_HAYSTACK_API', { apiNumber, haystackApiHost })
-  },
-  activateMultiApi(context, isMultiApi) {
-    context.commit('SET_IS_MULTI_API', isMultiApi)
+  createApiServer(context, { haystackApiHost }) {
+    context.commit('SET_HAYSTACK_API', { haystackApiHost })
   },
   async fetchEntity(context, { entity, apiNumber }) {
-    if (!state.apiServers[apiNumber]) return
     const entities = await state.apiServers[apiNumber].getEntity(entity)
     context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
   async fetchHistories(context, { idsEntity, apiNumber }) {
-    if (!state.apiServers[apiNumber]) return
-    const historiesPromises = await idsEntity.map(async id => {
-      return state.apiServers[apiNumber].getHistory(id)
-    })
-    const histories = await Promise.all(historiesPromises)
+    const histories = await Promise.all(
+      idsEntity.map(async id => {
+        return state.apiServers[apiNumber].getHistory(id)
+      })
+    )
     const idHistories = {}
     // eslint-disable-next-line no-return-assign
     idsEntity.forEach((key, index) => (idHistories[key] = histories[index]))
     context.commit('SET_HISTORIES', { idHistories, apiNumber })
   },
   async fetchAllEntity(context, { entity }) {
-    await Promise.all([
-      context.dispatch('fetchEntity', { entity, apiNumber: 0 }),
-      context.dispatch('fetchEntity', { entity, apiNumber: 1 })
-    ])
+    const { apiServers } = context.getters
+    await Promise.all(
+      // eslint-disable-next-line
+      apiServers.map(async (apiServer, index) => {
+        await context.dispatch('fetchEntity', { entity, apiNumber: index })
+      })
+    )
   },
   async fetchAllHistories(context, { idsEntity }) {
-    await Promise.all([
-      context.dispatch('fetchHistories', { idsEntity, apiNumber: 0 }),
-      context.dispatch('fetchHistories', { idsEntity, apiNumber: 1 })
-    ])
+    const { apiServers } = context.getters
+    await Promise.all(
+      // eslint-disable-next-line
+      apiServers.map((apiServer, index) => {
+        context.dispatch('fetchHistories', { idsEntity, apiNumber: index })
+      })
+    )
   }
 }
 export default new Vuex.Store({

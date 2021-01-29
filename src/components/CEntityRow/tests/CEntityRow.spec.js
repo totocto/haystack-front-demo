@@ -9,13 +9,6 @@ describe('CEntityRow.vue', () => {
   beforeEach(() => {
     wrapper = shallowMount(CEntityRow, {
       stubs: ['v-data-table'],
-      mocks: {
-        $store: new Vuex.Store({
-          getters: {
-            isMultiApi: () => false
-          }
-        })
-      },
       propsData: {
         id: 'id1',
         his: [[{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }], []],
@@ -38,13 +31,6 @@ describe('CEntityRow.vue', () => {
     beforeEach(() => {
       wrapper = shallowMount(CEntityRow, {
         stubs: ['v-data-table'],
-        mocks: {
-          $store: new Vuex.Store({
-            getters: {
-              isMultiApi: () => true
-            }
-          })
-        },
         propsData: {
           id: 'id1',
           his: [[{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }], null],
@@ -70,13 +56,6 @@ describe('CEntityRow.vue', () => {
     beforeEach(() => {
       wrapper = shallowMount(CEntityRow, {
         stubs: ['v-data-table'],
-        mocks: {
-          $store: new Vuex.Store({
-            getters: {
-              isMultiApi: () => true
-            }
-          })
-        },
         propsData: {
           id: 'id1',
           his: [null, null],
