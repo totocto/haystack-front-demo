@@ -5,6 +5,23 @@ const formatService = {
   formatIdEntity: id => {
     return id.split(' ')[0].substring(2)
   },
+  isRef: value => {
+    return value.substring(0,2) === 'r:'
+  },
+  isEntityFromSource: (entitiesFromAllSource, entityId) => {
+    let isEntityFromSource = false
+    entitiesFromAllSource.map(entities => {
+      entities.map(entity => {
+        if(entity.id === entityId) isEntityFromSource = true
+      })
+    })
+    return isEntityFromSource
+  },
+  formatEntityName: id => {
+    const entityName = id.substring(2).split(' ')
+    entityName.shift()
+    return entityName.join(' ')
+  },
   formatMarketShare: marketShare => {
     if (!marketShare) return '- %'
     return `${marketShare.toFixed(2).replace('.', ',')} %`
@@ -33,9 +50,9 @@ const formatService = {
   },
   groupAllEntitiesById: entitiesFromAllSources => {
     const initialEntities = entitiesFromAllSources.shift()
-    return entitiesFromAllSources.reduce((acc, entities) => formatService.GroupTwoEntitiesById(acc, entities), initialEntities)
+    return entitiesFromAllSources.reduce((acc, entities) => formatService.groupTwoEntitiesById(acc, entities), initialEntities)
   },
-  GroupTwoEntitiesById: (entitiesFromFirstSource, entitiesFromSecondSource) => {
+  groupTwoEntitiesById: (entitiesFromFirstSource, entitiesFromSecondSource) => {
     const mergeEntities = []
     entitiesFromFirstSource.map(entityFromFirstSource => {
       const idFromSource = entityFromFirstSource.id
@@ -56,6 +73,24 @@ const formatService = {
       })
     })
     return mergeEntities.concat(entitiesFromFirstSource.concat(entitiesFromSecondSource))
+  },
+  getLinkBetweenEntities: (entitiesFromAllSource) => {
+    const entitiesLink = []
+    const colorsLinkOutFromSource = []
+    entitiesFromAllSource.map(entities => {
+      entities.map( entity => {
+        Object.keys(entity).map(key => {
+          if(formatService.isRef(entity[key]) && key !== 'id') {
+            const formattedLink = [formatService.formatEntityName(entity.id), formatService.formatEntityName(entity[key])]
+            if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key])) {
+              colorsLinkOutFromSource.push({ id: formatService.formatEntityName(entity[key]), color: '#ff0000' })
+            }
+              entitiesLink.push(formattedLink)
+          }
+        })
+      })
+    })
+    return [entitiesLink, colorsLinkOutFromSource]
   }
 }
 

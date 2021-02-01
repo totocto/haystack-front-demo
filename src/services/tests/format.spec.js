@@ -29,6 +29,62 @@ describe('formatService', () => {
       expect(output).toEqual(expected)
     })
   })
+  describe('#isRef', () => {
+    it('should return true when this is a ref', () => {
+      // GIVEN
+      const ref = 'r:Something as a ref'
+      // WHEN
+      const output = formatService.isRef(ref)
+      // THEN
+      expect(output).toBeTrue()
+    })
+    it('should return false when this is not a ref', () => {
+      // GIVEN
+      const ref = 'p:Something which is not a ref'
+      // WHEN
+      const output = formatService.isRef(ref)
+      // THEN
+      expect(output).toBeFalse()
+    })
+  })
+
+  describe('#isEntityFromSource', () => {
+    describe('When entity is from source', () => {
+      it('should return true', () => {
+        // GIVEN
+        const entitiesFromAllSource = [[{ id: 'id1' }, { ts: 'id2' }]]
+        const entityIdToFind = 'id1'
+        // WHEN
+        const output = formatService.isEntityFromSource(entitiesFromAllSource, entityIdToFind)
+        // THEN
+        expect(output).toBeTrue()
+      })
+      it('should return true', () => {
+        // GIVEN
+        const entitiesFromAllSource = [
+          [{ id: 'id1' }, { id: 'id2' }],
+          [{ id: 'id3' }, { id: 'id4' }]
+        ]
+        const entityIdToFind = 'id4'
+        // WHEN
+        const output = formatService.isEntityFromSource(entitiesFromAllSource, entityIdToFind)
+        // THEN
+        expect(output).toBeTrue()
+      })
+    })
+    describe('When entity is not from source', () => {
+      it('should return false', () => {
+        // GIVEN
+        const entitiesFromAllSource = [[{ id: 'id"' }, { id: 'id3' }]]
+        const entityIdToFind = 'id1'
+        // WHEN
+        const output = formatService.isEntityFromSource(entitiesFromAllSource, entityIdToFind)
+        // THEN
+        expect(output).toBeFalse()
+      })
+    })
+  })
+
   describe('groupAllEntitiesById', () => {
     it('should Group By Id All entities', () => {
       // GIVEN
@@ -46,13 +102,45 @@ describe('formatService', () => {
       expect(output).toEqual(expected)
     })
   })
+  describe('#getLinkBetweenEntities', () => {
+    describe('When entityLink is from source', () => {
+      it('should return link from source, and an empty array', () => {
+        const entitiesFromAllSource = [
+          [{ id: 'r:id1 name of first ref', oneRef: 'r:aRef name of second ref' }, { id: 'r:aRef name of second ref' }]
+        ]
+        const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
+        const nodeColor = []
+        const linkBetweenEntities = [['name of first ref', 'name of second ref']]
+        expect(result).toEqual([linkBetweenEntities, nodeColor])
+      })
+      it('should return only link from source', () => {
+        const entitiesFromAllSource = [
+          [{ id: 'r:id1 name of first ref', oneRef: 'r:aRef name of second ref' }],
+          [{ id: 'r:aRef name of second ref' }]
+        ]
+        const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
+        const colorNodesOutsideFromSource = []
+        const linksBetweenEntities = [['name of first ref', 'name of second ref']]
+        expect(result).toEqual([linksBetweenEntities, colorNodesOutsideFromSource])
+      })
+    })
+    describe('When entityLink is not from source', () => {
+      it('should return only link outside from source', () => {
+        const entitiesFromAllSource = [[{ id: 'r:id1 name of first ref', oneRef: 'r:aRef name of second ref' }]]
+        const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
+        const linkBetweenEntities = [['name of first ref', 'name of second ref']]
+        const colorsForNodeOutsideFromSource = [{ color: '#ff0000', id: 'name of second ref'}]
+        expect(result).toEqual([linkBetweenEntities, colorsForNodeOutsideFromSource])
+      })
+    })
+  })
   describe('#groupTwoEntitiesById', () => {
     describe('When entities have not similar entity', () => {
       it('should merge both entities', () => {
         const entityFromFirstSource = [{ id: 'id1', key1: 10 }]
         const entityFromSecondSource = [{ id: 'id2', key2: 12 }]
 
-        const output = formatService.GroupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
+        const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
         const expected = [
           { id: 'id1', key1: 10 },
@@ -67,7 +155,7 @@ describe('formatService', () => {
           const entityFromFirstSource = [{ id: 'id1', key1: 10 }]
           const entityFromSecondSource = [{ id: 'id1', key2: 12 }]
 
-          const output = formatService.GroupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
+          const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
           const expected = [{ id: 'id1', key1: 10, key2: 12 }]
           expect(output).toEqual(expected)
@@ -78,7 +166,7 @@ describe('formatService', () => {
           const entityFromFirstSource = [{ id: 'id1', key1: 10 }]
           const entityFromSecondSource = [{ id: 'id1', key2: 12, key1: 10 }]
 
-          const output = formatService.GroupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
+          const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
           const expected = [{ id: 'id1', key1: 10, key2: 12 }]
           expect(output).toEqual(expected)
@@ -89,7 +177,7 @@ describe('formatService', () => {
           const entityFromFirstSource = [{ id: 'id1', key1: 10 }]
           const entityFromSecondSource = [{ id: 'id1', key2: 12, key1: 12 }]
 
-          const output = formatService.GroupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
+          const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
           const expected = [{ id: 'id1', key1_1: 10, key1_2: 12, key2: 12 }]
           expect(output).toEqual(expected)
@@ -100,7 +188,7 @@ describe('formatService', () => {
           const entityFromFirstSource = [{ id: 'id1', key1: 10, key2: 1, key4: 'value4', key5: 'value5' }]
           const entityFromSecondSource = [{ id: 'id1', key1: 12, key2: 12, key3: 'value3', key4: 'value4' }]
 
-          const output = formatService.GroupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
+          const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
           const expected = [
             { id: 'id1', key1_1: 10, key1_2: 12, key2_1: 1, key2_2: 12, key3: 'value3', key4: 'value4', key5: 'value5' }

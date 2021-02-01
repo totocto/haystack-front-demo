@@ -2,6 +2,12 @@
   <div class="summary-content">
     <h2>Sélectionner les API à requêter</h2>
     <div class="summary-content__api-selector-container">
+      <c-graph
+        v-if="isDataLoaded"
+        :data="getRelationGraphEntity(entities)"
+        id="test"
+        title="Relation entre les entités"
+      ></c-graph>
       <v-text-field
         class="summary-content__text-field"
         label="API to query"
@@ -46,10 +52,11 @@
 <script>
 import { formatService } from '../../services'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.vue'
+import CGraph from '../../components/CGraph/CGraph.vue'
 
 export default {
   name: 'VSummaryContent',
-  components: { CEntityRow },
+  components: { CEntityRow, CGraph },
   data() {
     return {
       isDataLoaded: false,
@@ -96,11 +103,13 @@ export default {
       return this.histories.map((history, index) => this.getHistory(idEntity, index))
     },
     async updateFilter(newFilter) {
+      this.isDataLoaded = false
       this.filterApi = newFilter
       await Promise.all([
         await this.$store.dispatch('fetchAllEntity', { entity: newFilter }),
         await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
       ])
+      this.isDataLoaded = true
     },
     async updateAPI(haystackApiHost, apiNumber) {
       this.isDataLoaded = false
@@ -110,6 +119,9 @@ export default {
         await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
       ])
       this.isDataLoaded = true
+    },
+    getRelationGraphEntity(entities) {
+      return formatService.getLinkBetweenEntities(entities)
     }
   },
   async beforeMount() {
