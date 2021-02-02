@@ -26,15 +26,21 @@ export default {
       type: Array,
       default: () => ['from', 'to']
     },
-    data: {
+    dataEntities: {
       type: Array,
       default: () => []
     }
   },
   methods: {
-    handlePointClick(point) {
-      console.log(point)
-      return ''
+    isPointOutFromSource(pointName, colorEntities) {
+      return colorEntities.find(entityColor => entityColor.id === pointName)
+    },
+    async handlePointClick(pointName, colorEntities, entityNameToEntityId) {
+      if (this.isPointOutFromSource(pointName, colorEntities)) {
+        this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
+        await this.$store.dispatch('fetchAllEntity', { entity: `id==@${entityNameToEntityId[pointName]}` })
+        this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
+      } else this.$emit('pointClicked', pointName)
     }
   },
   mounted() {
@@ -57,9 +63,12 @@ export default {
           },
           point: {
             events: {
-              click(e) {
-                console.log(e)
-              }
+              click: async function(event) {
+                const pointName = event.point.id
+                const colorEntities = this.dataEntities[1]
+                const entityNameToEntityId = this.dataEntities[2]
+                await this.handlePointClick(pointName, colorEntities, entityNameToEntityId)
+              }.bind(this)
             }
           }
         }
@@ -74,8 +83,8 @@ export default {
             linkFormat: ''
           },
           id: 'lang-tree',
-          data: this.data[0],
-          nodes: this.data[1]
+          data: this.dataEntities[0],
+          nodes: this.dataEntities[1]
         }
       ]
     })

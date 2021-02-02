@@ -76,21 +76,25 @@ const formatService = {
   },
   getLinkBetweenEntities: (entitiesFromAllSource) => {
     const entitiesLink = []
+    const entitiesNameToEntitiesId = {}
     const colorsLinkOutFromSource = []
     entitiesFromAllSource.map(entities => {
       entities.map( entity => {
         Object.keys(entity).map(key => {
           if(formatService.isRef(entity[key]) && key !== 'id') {
-            const formattedLink = [formatService.formatEntityName(entity.id), formatService.formatEntityName(entity[key])]
+            const formatedEntityName = formatService.formatEntityName(entity[key])
+            const formatedEntityId = formatService.formatIdEntity(entity[key])
+            const formatedLink = [formatService.formatEntityName(entity.id), formatedEntityName]
             if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key])) {
-              colorsLinkOutFromSource.push({ id: formatService.formatEntityName(entity[key]), color: '#ff0000' })
+              colorsLinkOutFromSource.push({ id: formatedEntityName, color: '#ff0000' })
             }
-              entitiesLink.push(formattedLink)
+              entitiesLink.push(formatedLink)
+              entitiesNameToEntitiesId[formatedEntityName] = formatedEntityId
           }
         })
       })
     })
-    return [entitiesLink, colorsLinkOutFromSource]
+    return [entitiesLink, colorsLinkOutFromSource, entitiesNameToEntitiesId]
   }
 }
 

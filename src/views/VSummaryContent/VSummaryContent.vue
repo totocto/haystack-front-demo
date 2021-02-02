@@ -1,30 +1,13 @@
 <template>
   <div class="summary-content">
-    <h2>Sélectionner les API à requêter</h2>
     <div class="summary-content__api-selector-container">
       <c-graph
         v-if="isDataLoaded"
-        :data="getRelationGraphEntity(entities)"
+        @pointClicked="onGraphClick"
+        :dataEntities="getRelationGraphEntity(entities)"
         id="test"
         title="Relation entre les entités"
       ></c-graph>
-      <v-text-field
-        class="summary-content__text-field"
-        label="API to query"
-        outlined
-        dense
-        background-color="white"
-        :value="getDefaultApiHost"
-        @change="updateAPI($event, 0)"
-      />
-      <v-text-field
-        class="summary-content__text-field"
-        label="API to query"
-        outlined
-        dense
-        background-color="white"
-        @change="updateAPI($event, 1)"
-      />
     </div>
     <h2>Recherche dans Haystack</h2>
     <v-text-field
@@ -38,6 +21,7 @@
     <div v-if="isDataLoaded">
       <c-entity-row
         v-for="row in entitiesGroupedById"
+        :ref="getEntityName(row.id)"
         :key="row.id"
         :id="row.id"
         :dataEntity="row"
@@ -57,13 +41,13 @@ import CGraph from '../../components/CGraph/CGraph.vue'
 export default {
   name: 'VSummaryContent',
   components: { CEntityRow, CGraph },
-  data() {
-    return {
-      isDataLoaded: false,
-      filterApi: ''
-    }
-  },
   computed: {
+    filterApi() {
+      return this.$store.getters.filterApi
+    },
+    isDataLoaded() {
+      return this.$store.getters.isDataLoaded
+    },
     entities() {
       return this.$store.getters.entities
     },
@@ -84,13 +68,19 @@ export default {
       // eslint-disable-next-line
       const { entities } = this.$store.getters
       if (this.entities.length === 1) return entities[0]
-      return this.groupByIdEntities(entities)
-      // return this.groupByIdEntities(entities[0], entities[1])
+      return this.groupByIdEntities(this.entities)
     }
   },
   methods: {
-    groupByIdEntities(entityFromFirstSource, entityFromSecondSource) {
-      return formatService.groupAllEntitiesById(entityFromFirstSource, entityFromSecondSource)
+    onGraphClick(entityName) {
+      this.$refs[entityName][0].$el.scrollIntoView()
+      window.scrollBy(0, -90)
+    },
+    getEntityName(idEntity) {
+      return formatService.formatEntityName(idEntity)
+    },
+    groupByIdEntities(entities) {
+      return formatService.groupAllEntitiesById(entities)
     },
     getHistory(idEntity, sourceNumber) {
       const formattedId = formatService.formatIdEntity(idEntity)
@@ -103,22 +93,13 @@ export default {
       return this.histories.map((history, index) => this.getHistory(idEntity, index))
     },
     async updateFilter(newFilter) {
-      this.isDataLoaded = false
-      this.filterApi = newFilter
+      this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
+      this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
       await Promise.all([
         await this.$store.dispatch('fetchAllEntity', { entity: newFilter }),
         await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
       ])
-      this.isDataLoaded = true
-    },
-    async updateAPI(haystackApiHost, apiNumber) {
-      this.isDataLoaded = false
-      this.$store.dispatch('createApiServer', { haystackApiHost, apiNumber })
-      await Promise.all([
-        await this.$store.dispatch('fetchAllEntity', { entity: this.filterApi }),
-        await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
-      ])
-      this.isDataLoaded = true
+      this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
     },
     getRelationGraphEntity(entities) {
       return formatService.getLinkBetweenEntities(entities)
@@ -127,7 +108,7 @@ export default {
   async beforeMount() {
     await this.$store.dispatch('fetchAllEntity', { entity: '' })
     await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
-    this.isDataLoaded = true
+    this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
   }
 }
 </script>
@@ -136,14 +117,14 @@ export default {
 .summary-content {
   padding-top: 25px;
 }
+.summary-content__entity-row {
+  background-color: white;
+}
 .summary-content__text-field {
-  padding-top: 10px !important;
+  margin-top: 10px !important;
   width: 30%;
   .v-input--is-focused {
     background: white;
   }
-}
-.summary-content__entity-row {
-  background-color: white;
 }
 </style>

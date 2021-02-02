@@ -129,7 +129,7 @@ describe('formatService', () => {
         const entitiesFromAllSource = [[{ id: 'r:id1 name of first ref', oneRef: 'r:aRef name of second ref' }]]
         const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
         const linkBetweenEntities = [['name of first ref', 'name of second ref']]
-        const colorsForNodeOutsideFromSource = [{ color: '#ff0000', id: 'name of second ref'}]
+        const colorsForNodeOutsideFromSource = [{ color: '#ff0000', id: 'name of second ref' }]
         expect(result).toEqual([linkBetweenEntities, colorsForNodeOutsideFromSource])
       })
     })
