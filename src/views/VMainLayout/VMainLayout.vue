@@ -73,7 +73,6 @@ export default {
     },
     async updateAPI() {
       const haystackApiHost = this.comboboxInput
-      console.log('HEYYYY', haystackApiHost)
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })

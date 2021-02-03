@@ -16,7 +16,7 @@
             <a v-if="isCoordinate(item.value)" :href="getUrlCoordinate(item.value)">{{ item.value.substring(2) }}</a>
             <div v-else-if="isRef(item.value)">
               <span>{{ getRefName(item.value) }}</span>
-              <v-btn class="entity-row__click-button" @click="copyText(item)">copy Ref</v-btn>
+              <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
             </div>
             <span v-else>{{ item.value }}</span>
           </template>
