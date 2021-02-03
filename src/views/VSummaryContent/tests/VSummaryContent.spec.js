@@ -9,12 +9,15 @@ import CEntityRow from '../../../components/CEntityRow/CEntityRow.vue'
 Vue.use(Vuex)
 let wrapper
 let actions
+let mutations
 const globalStubs = ['router-view', 'v-text-field']
 describe('VSummaryContent.vue', () => {
   beforeEach(() => {
+    mutations = {
+      SET_FILTER_API: sinon.stub()
+    }
     actions = {
-      fetchAllEntity: sinon.stub(),
-      fetchAllHistories: sinon.stub(),
+      reloadAllData: sinon.stub(),
       fetchEntity: sinon.stub(),
       fetchHistories: sinon.stub(),
       createApiServer: sinon.stub(),
@@ -22,21 +25,18 @@ describe('VSummaryContent.vue', () => {
     }
     wrapper = shallowMount(VSummaryContent, {
       stubs: globalStubs,
-      data() {
-        return {
-          isDataLoaded: true
-        }
-      },
       mocks: {
         $store: new Vuex.Store({
           getters: {
+            isDataLoaded: () => true,
             apiServers: () => ['an api'],
             histories: () => {
               return [{ 'p:thisisademo1': ['history1'] }, []]
             },
             entities: () => [[{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }]]
           },
-          actions
+          actions,
+          mutations
         })
       }
     })
@@ -47,27 +47,17 @@ describe('VSummaryContent.vue', () => {
   it('should mount the component', () => {
     expect(wrapper).toBeDefined()
   })
-  it('should dispatch fetchEntity with right args', () => {
-    expect(actions.fetchAllEntity.calledOnce).toBeTrue()
-    expect(actions.fetchAllEntity.args[0][1]).toEqual({ entity: '' })
-  })
-  it('should call fetchHistory with right args', () => {
-    expect(actions.fetchAllHistories.calledOnce).toBeTrue()
-    expect(actions.fetchAllHistories.args[0][1]).toEqual({ idsEntity: ['p:thisisademo1'] })
+  it('should dispatch reloadAllData with right args', () => {
+    expect(actions.reloadAllData.calledOnce).toBeTrue()
+    expect(actions.reloadAllData.args[0][1]).toEqual({ entity: '' })
   })
   it('should create CEntityRow component', () => {
-    expect(wrapper.vm.$data.isDataLoaded).toBeTrue()
     expect(wrapper.findComponent(CEntityRow).exists()).toBeTrue()
   })
   describe('When data are not loaded', () => {
     beforeEach(() => {
       wrapper = shallowMount(VSummaryContent, {
         stubs: globalStubs,
-        data() {
-          return {
-            isDataLoaded: false
-          }
-        },
         mocks: {
           $store: new Vuex.Store({
             getters: {
@@ -79,7 +69,8 @@ describe('VSummaryContent.vue', () => {
                 [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }]
               ]
             },
-            actions
+            actions,
+            mutations
           })
         }
       })
@@ -135,16 +126,44 @@ describe('VSummaryContent.vue', () => {
       it('should fetch new entity and histories according to the input', async () => {
         const newRequest = 'a request'
         await wrapper.vm.updateFilter(newRequest)
-        expect(actions.fetchAllEntity.calledTwice).toBeTrue()
-        expect(actions.fetchAllHistories.calledTwice).toBeTrue()
+        expect(actions.reloadAllData.calledTwice).toBeTrue()
       })
     })
-    describe('#updateAPI', () => {
-      it('should dispatch according to the input', async () => {
-        const newApiHost = 'an  api'
-        const apiNumber = 0
-        await wrapper.vm.updateAPI(newApiHost, apiNumber)
-        expect(actions.createApiServer.calledOnce).toBeTrue()
+    describe('#onGraphClick', () => {
+      beforeEach(() => {
+        wrapper = shallowMount(VSummaryContent, {
+          stubs: globalStubs,
+          mocks: {
+            $store: new Vuex.Store({
+              getters: {
+                apiServers: () => ['an api', null],
+                histories: () => {
+                  return [
+                    { 'p:thisisademo1': ['history1'], 'p:thisisademo2': ['history2'] },
+                    { 'p:thisisademo1': ['history1_bis'] }
+                  ]
+                },
+                entities: () => [
+                  [
+                    { id: 'r:p:thisisademo1 demoEngie1' },
+                    { id: 'r:p:thisisademo1 demoEngie2', siteRef: 'r:idStuff demoEngie1' }
+                  ],
+                  [{ id: 'r:p:thisisademo2 demoEngie3', siteRef: 'r:idPoint a point' }]
+                ]
+              },
+              mutations,
+              actions
+            })
+          }
+        })
+      })
+      describe('When point clicked on graph is not in api answer', () => {
+        it('should call reloadAllData', async () => {
+          const pointName = 'a point'
+          await wrapper.vm.onGraphClick(pointName)
+          expect(actions.reloadAllData.called).toBeTrue()
+          expect(mutations.SET_FILTER_API.called).toBeTrue()
+        })
       })
     })
   })

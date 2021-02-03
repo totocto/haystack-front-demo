@@ -111,7 +111,8 @@ describe('formatService', () => {
         const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
         const nodeColor = []
         const linkBetweenEntities = [['name of first ref', 'name of second ref']]
-        expect(result).toEqual([linkBetweenEntities, nodeColor])
+        const entityNameToRef = { 'name of second ref': 'aRef' }
+        expect(result).toEqual([linkBetweenEntities, nodeColor, entityNameToRef])
       })
       it('should return only link from source', () => {
         const entitiesFromAllSource = [
@@ -121,7 +122,8 @@ describe('formatService', () => {
         const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
         const colorNodesOutsideFromSource = []
         const linksBetweenEntities = [['name of first ref', 'name of second ref']]
-        expect(result).toEqual([linksBetweenEntities, colorNodesOutsideFromSource])
+        const entityNameToRef = { 'name of second ref': 'aRef' }
+        expect(result).toEqual([linksBetweenEntities, colorNodesOutsideFromSource, entityNameToRef])
       })
     })
     describe('When entityLink is not from source', () => {
@@ -130,7 +132,8 @@ describe('formatService', () => {
         const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
         const linkBetweenEntities = [['name of first ref', 'name of second ref']]
         const colorsForNodeOutsideFromSource = [{ color: '#ff0000', id: 'name of second ref' }]
-        expect(result).toEqual([linkBetweenEntities, colorsForNodeOutsideFromSource])
+        const entityNameToRef = { 'name of second ref': 'aRef' }
+        expect(result).toEqual([linkBetweenEntities, colorsForNodeOutsideFromSource, entityNameToRef])
       })
     })
   })

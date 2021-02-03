@@ -14,6 +14,7 @@
       class="summary-content__text-field"
       label="Filter API"
       outlined
+      v-model="filterApi"
       dense
       background-color="white"
       @change="updateFilter($event)"
@@ -66,15 +67,28 @@ export default {
     },
     entitiesGroupedById() {
       // eslint-disable-next-line
-      const { entities } = this.$store.getters
-      if (this.entities.length === 1) return entities[0]
+      if (this.entities.length === 1) return this.entities[0]
       return this.groupByIdEntities(this.entities)
     }
   },
   methods: {
-    onGraphClick(entityName) {
-      this.$refs[entityName][0].$el.scrollIntoView()
-      window.scrollBy(0, -90)
+    isPointOutFromSource(pointName, colorEntities) {
+      return colorEntities.find(entityColor => entityColor.id === pointName)
+    },
+    async onGraphClick(pointName) {
+      const linkBetweenEntities = this.getRelationGraphEntity(this.entities)
+      const colorEntities = linkBetweenEntities[1]
+      const entityNameToEntityId = linkBetweenEntities[2]
+      if (this.isPointOutFromSource(pointName, colorEntities)) {
+        const newApiFilter = `id==@${entityNameToEntityId[pointName]}`
+        await this.$store.dispatch('reloadAllData', {
+          entity: newApiFilter
+        })
+        this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
+      } else {
+        this.$refs[pointName][0].$el.scrollIntoView()
+        window.scrollBy(0, -90)
+      }
     },
     getEntityName(idEntity) {
       return formatService.formatEntityName(idEntity)
@@ -93,22 +107,17 @@ export default {
       return this.histories.map((history, index) => this.getHistory(idEntity, index))
     },
     async updateFilter(newFilter) {
-      this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
-      this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
-      await Promise.all([
-        await this.$store.dispatch('fetchAllEntity', { entity: newFilter }),
-        await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
-      ])
-      this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
+      if (newFilter !== this.$store.getters.filterApi) {
+        this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
+        await this.$store.dispatch('reloadAllData', { entity: newFilter })
+      }
     },
     getRelationGraphEntity(entities) {
       return formatService.getLinkBetweenEntities(entities)
     }
   },
   async beforeMount() {
-    await this.$store.dispatch('fetchAllEntity', { entity: '' })
-    await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
-    this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
+    await this.$store.dispatch('reloadAllData', { entity: '' })
   }
 }
 </script>

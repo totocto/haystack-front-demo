@@ -31,18 +31,6 @@ export default {
       default: () => []
     }
   },
-  methods: {
-    isPointOutFromSource(pointName, colorEntities) {
-      return colorEntities.find(entityColor => entityColor.id === pointName)
-    },
-    async handlePointClick(pointName, colorEntities, entityNameToEntityId) {
-      if (this.isPointOutFromSource(pointName, colorEntities)) {
-        this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
-        await this.$store.dispatch('fetchAllEntity', { entity: `id==@${entityNameToEntityId[pointName]}` })
-        this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
-      } else this.$emit('pointClicked', pointName)
-    }
-  },
   mounted() {
     this.chart = Highcharts.chart(this.id, {
       title: {
@@ -63,11 +51,8 @@ export default {
           },
           point: {
             events: {
-              click: async function(event) {
-                const pointName = event.point.id
-                const colorEntities = this.dataEntities[1]
-                const entityNameToEntityId = this.dataEntities[2]
-                await this.handlePointClick(pointName, colorEntities, entityNameToEntityId)
+              click: function emitEvent(event) {
+                this.$emit('pointClicked', event.point.id)
               }.bind(this)
             }
           }

@@ -2,6 +2,7 @@
 import Vuex from 'vuex'
 import Vue from 'vue'
 import HaystackApiService from './services/haystackApi.service'
+import formatService from './services/format.service'
 
 Vue.use(Vuex)
 window.env = window.env || {}
@@ -69,16 +70,15 @@ export const actions = {
     const entities = await state.apiServers[apiNumber].getEntity(entity)
     await context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
-  async fetchHistories(context, { idsEntity, apiNumber }) {
-    console.log('IDSENTITY', idsEntity)
+  async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
     const histories = await Promise.all(
-      idsEntity.map(async id => {
+      idsEntityWithHis.map(async id => {
         return state.apiServers[apiNumber].getHistory(id)
       })
     )
     const idHistories = {}
     // eslint-disable-next-line no-return-assign
-    idsEntity.forEach((key, index) => (idHistories[key] = histories[index]))
+    idsEntityWithHis.forEach((key, index) => (idHistories[key] = histories[index]))
     await context.commit('SET_HISTORIES', { idHistories, apiNumber })
   },
   async fetchAllEntity(context, { entity }) {
@@ -90,14 +90,29 @@ export const actions = {
       })
     )
   },
-  async fetchAllHistories(context, { idsEntity }) {
+  async fetchAllHistories(context) {
     const { apiServers } = context.getters
+    const { entities } = context.getters
+    const groupEntities = entities.length === 1 ? entities[0] : formatService.groupAllEntitiesById(entities)
+    const idsEntityWithHis = groupEntities
+      .filter(entity => entity.his)
+      .map(entity => {
+        return formatService.formatIdEntity(entity.id)
+      })
     await Promise.all(
       // eslint-disable-next-line
-      apiServers.map((apiServer, index) => {
-        context.dispatch('fetchHistories', { idsEntity, apiNumber: index })
+      await apiServers.map(async (apiServer, index) => {
+        await context.dispatch('fetchHistories', { idsEntityWithHis, apiNumber: index })
       })
     )
+  },
+  async reloadAllData(context, { entity }) {
+    context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
+    await Promise.all([
+      await context.dispatch('fetchAllEntity', { entity }),
+      await context.dispatch('fetchAllHistories')
+    ])
+    context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
   }
 }
 export default new Vuex.Store({

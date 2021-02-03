@@ -45,23 +45,18 @@ export default {
     }
   },
   methods: {
+    isApiServerAlreadyExists(host) {
+      return Boolean(this.$store.getters.apiServers.find(apiServer => apiServer.haystackApiHost === host))
+    },
     async changeApiServers(haystackApiHost) {
-      this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
       this.$store.commit('DELETE_HAYSTACK_API', { haystackApiHost })
-      await Promise.all([
-        await this.$store.dispatch('fetchAllEntity', { entity: this.$store.getters.filterApi }),
-        await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
-      ])
-      this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
+      await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
     },
     async updateAPI(haystackApiHost) {
-      this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
-      this.$store.dispatch('createApiServer', { haystackApiHost })
-      await Promise.all([
-        await this.$store.dispatch('fetchAllEntity', { entity: this.$store.getters.filterApi }),
-        await this.$store.dispatch('fetchAllHistories', { idsEntity: this.idsWithHis })
-      ])
-      this.$store.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
+      if (!this.isApiServerAlreadyExists(haystackApiHost)) {
+        this.$store.dispatch('createApiServer', { haystackApiHost })
+        await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+      }
     }
   }
 }

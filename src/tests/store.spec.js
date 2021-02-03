@@ -4,7 +4,7 @@ import sinon from 'sinon'
 import { actions, getters, mutations } from '../store'
 import HaystackApiService from '../services/haystackApi.service'
 
-const { SET_ENTITIES, SET_HISTORIES, SET_HAYSTACK_API } = mutations
+const { SET_ENTITIES, SET_HISTORIES, SET_HAYSTACK_API, SET_FILTER_API, DELETE_HAYSTACK_API } = mutations
 const entities = { rows: ['entity1', 'entity2'] }
 describe('store', () => {
   beforeAll(() => {
@@ -34,12 +34,28 @@ describe('store', () => {
         expect(state.entities).toEqual([['entity1'], entities])
       })
     })
+    describe('#SET_FILTER_API', () => {
+      it('should set filterApi', () => {
+        const state = { filterApi: '' }
+        const newFilterApi = 'a filter'
+        SET_FILTER_API(state, { filterApi: newFilterApi })
+        expect(state.filterApi).toBe(newFilterApi)
+      })
+    })
     describe('#SET_HISTORIES', () => {
       it('should set histories', () => {
         const state = { histories: [{}, {}] }
         const idHistories = { entity1: ['history'], entity2: ['history'] }
         SET_HISTORIES(state, { idHistories, apiNumber: 0 })
         expect(state.histories).toEqual([idHistories, {}])
+      })
+    })
+    describe('#DELETE_HAYSTACK_API', () => {
+      it('should delete the corresponding apiServer', () => {
+        const haystackApiHost = 'a server'
+        const state = { apiServers: [{ haystackApiHost }] }
+        DELETE_HAYSTACK_API(state, { haystackApiHost })
+        expect(state.apiServers).toEqual([])
       })
     })
     describe('#SET_HAYSTACK_API', () => {
@@ -65,6 +81,14 @@ describe('store', () => {
   })
 
   describe('getters', () => {
+    describe('#filterApi', () => {
+      it('should return filterApi', () => {
+        const filterApi = 'a filter'
+        const state = { filterApi }
+        const filterApiStored = getters.filterApi(state)
+        expect(filterApiStored).toBe(filterApi)
+      })
+    })
     describe('#entities', () => {
       it('should return entities', () => {
         const entities = [['entity1', 'entity2'], null]
@@ -122,31 +146,60 @@ describe('store', () => {
     describe('#fetchHistories', () => {
       describe('When Api exists', () => {
         it('should commit news histories to the first api', async () => {
-          const idsEntity = ['id1', 'id2']
+          const idsEntityWithHis = ['id1', 'id2']
           const apiNumber = 0
           const expected = { apiNumber: 0, idHistories: { id1: ['history1'], id2: ['history1'] } }
-          await actions.fetchHistories({ commit }, { idsEntity, apiNumber })
+          await actions.fetchHistories({ commit }, { idsEntityWithHis, apiNumber })
           expect(commit).toHaveBeenNthCalledWith(1, 'SET_HISTORIES', expected)
         })
       })
     })
     describe('#fetchAllHistories', () => {
       it('should fetch histories for 2 api when there is 2 api', async () => {
-        const getters = { apiServers: ['api1', 'api2'] }
-        const idsEntity = ['id1', 'id2']
-        await actions.fetchAllHistories({ dispatch, getters }, { idsEntity })
+        const getters = {
+          apiServers: ['api1', 'api2'],
+          entities: [
+            [
+              { id: 'r:id1 entity name', his: 'm:' },
+              { id: 'r:id2 entity name', his: 'm:' }
+            ]
+          ]
+        }
+        await actions.fetchAllHistories({ dispatch, getters })
         expect(dispatch).toHaveBeenCalledTimes(2)
-        expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchHistories', { apiNumber: 0, idsEntity: ['id1', 'id2'] })
-        expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchHistories', { apiNumber: 1, idsEntity: ['id1', 'id2'] })
+        expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchHistories', {
+          apiNumber: 0,
+          idsEntityWithHis: ['id1', 'id2']
+        })
+        expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchHistories', {
+          apiNumber: 1,
+          idsEntityWithHis: ['id1', 'id2']
+        })
       })
       it('should fetch histories for 3 api when there is 3 api', async () => {
-        const getters = { apiServers: ['api1', 'api2', 'api3'] }
-        const idsEntity = ['id1', 'id2']
-        await actions.fetchAllHistories({ dispatch, getters }, { idsEntity })
+        const getters = {
+          apiServers: ['api1', 'api2', 'api3'],
+          entities: [
+            [
+              { id: 'r:id1 entity name', his: 'm:' },
+              { id: 'r:id2 entity name', his: 'm:' }
+            ]
+          ]
+        }
+        await actions.fetchAllHistories({ dispatch, getters })
         expect(dispatch).toHaveBeenCalledTimes(3)
-        expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchHistories', { apiNumber: 0, idsEntity: ['id1', 'id2'] })
-        expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchHistories', { apiNumber: 1, idsEntity: ['id1', 'id2'] })
-        expect(dispatch).toHaveBeenNthCalledWith(3, 'fetchHistories', { apiNumber: 2, idsEntity: ['id1', 'id2'] })
+        expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchHistories', {
+          apiNumber: 0,
+          idsEntityWithHis: ['id1', 'id2']
+        })
+        expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchHistories', {
+          apiNumber: 1,
+          idsEntityWithHis: ['id1', 'id2']
+        })
+        expect(dispatch).toHaveBeenNthCalledWith(3, 'fetchHistories', {
+          apiNumber: 2,
+          idsEntityWithHis: ['id1', 'id2']
+        })
       })
     })
     describe('#fetchAllEntity', () => {
@@ -166,6 +219,22 @@ describe('store', () => {
         expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchEntity', { apiNumber: 0, entity: 'site' })
         expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchEntity', { apiNumber: 1, entity: 'site' })
         expect(dispatch).toHaveBeenNthCalledWith(3, 'fetchEntity', { apiNumber: 2, entity: 'site' })
+      })
+    })
+    describe('#reloadAllData', () => {
+      it('should call fetchAllHistories', async () => {
+        const entity = 'an entity'
+        await actions.reloadAllData({ dispatch, commit }, { entity })
+        expect(dispatch).toHaveBeenCalledTimes(2)
+        expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchAllEntity', { entity })
+        expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchAllHistories')
+      })
+      it('should commit twice SET_IS_DATA_LOADED', async () => {
+        const entity = 'an entity'
+        await actions.reloadAllData({ dispatch, commit }, { entity })
+        expect(commit).toHaveBeenCalledTimes(2)
+        expect(commit).toHaveBeenNthCalledWith(1, 'SET_IS_DATA_LOADED', { isDataLoaded: false })
+        expect(commit).toHaveBeenNthCalledWith(2, 'SET_IS_DATA_LOADED', { isDataLoaded: true })
       })
     })
   })
