@@ -28,6 +28,11 @@ export const mutations = {
   },
   DELETE_HAYSTACK_API(state, { haystackApiHost }) {
     const newApiServers = state.apiServers.slice()
+    const newHistories = state.histories.slice()
+    const indexOfApiServerToDelete = state.apiServers.findIndex(
+      apiServer => apiServer.haystackApiHost === haystackApiHost
+    )
+    state.histories = newHistories.slice(indexOfApiServerToDelete, indexOfApiServerToDelete)
     state.apiServers = newApiServers.filter(apiServer => apiServer.haystackApiHost !== haystackApiHost)
   },
   SET_IS_DATA_LOADED(state, { isDataLoaded }) {

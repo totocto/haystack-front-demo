@@ -53,9 +53,10 @@ describe('store', () => {
     describe('#DELETE_HAYSTACK_API', () => {
       it('should delete the corresponding apiServer', () => {
         const haystackApiHost = 'a server'
-        const state = { apiServers: [{ haystackApiHost }] }
+        const state = { apiServers: [{ haystackApiHost }], histories: [['an history']] }
         DELETE_HAYSTACK_API(state, { haystackApiHost })
         expect(state.apiServers).toEqual([])
+        expect(state.histories).toEqual([])
       })
     })
     describe('#SET_HAYSTACK_API', () => {
