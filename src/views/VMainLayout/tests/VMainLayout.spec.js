@@ -8,7 +8,7 @@ Vue.use(Vuex)
 let wrapper
 let actions
 let mutations
-const globalStubs = ['router-view', 'v-app-bar', 'v-img', 'v-spacer', 'v-text-field', 'v-select']
+const globalStubs = ['router-view', 'v-app-bar', 'v-img', 'v-spacer', 'v-combobox', 'v-icon']
 describe('VMainLayout.vue', () => {
   beforeEach(() => {
     mutations = {
@@ -22,6 +22,9 @@ describe('VMainLayout.vue', () => {
     }
     wrapper = shallowMount(VMainLayout, {
       stubs: globalStubs,
+      propsData: {
+        comboboxInput: 'host1'
+      },
       mocks: {
         $store: new Vuex.Store({
           getters: {
@@ -72,8 +75,10 @@ describe('VMainLayout.vue', () => {
     describe('#updateAPI', () => {
       describe('When api already exists', () => {
         it('should call commit', async () => {
-          const haystackApiHost = 'host1'
-          await wrapper.vm.updateAPI(haystackApiHost)
+          wrapper.setData({
+            comboboxInput: 'host1'
+          })
+          await wrapper.vm.updateAPI()
           expect(actions.createApiServer.called).toBeFalse()
           expect(actions.reloadAllData.called).toBeFalse()
         })
@@ -81,7 +86,10 @@ describe('VMainLayout.vue', () => {
       describe('When api does not exists', () => {
         it('should call commit', async () => {
           const haystackApiHost = 'host2'
-          await wrapper.vm.updateAPI(haystackApiHost)
+          wrapper.setData({
+            comboboxInput: haystackApiHost
+          })
+          await wrapper.vm.updateAPI()
           expect(actions.createApiServer.calledOnce).toBeTrue()
           expect(actions.reloadAllData.calledOnce).toBeTrue()
           expect(actions.createApiServer.args[0][1]).toEqual({ haystackApiHost })
