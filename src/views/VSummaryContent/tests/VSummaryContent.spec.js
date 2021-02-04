@@ -122,13 +122,6 @@ describe('VSummaryContent.vue', () => {
         expect(historyResult).toEqual([['history1'], ['history1_bis']])
       })
     })
-    describe('#updateFilter', () => {
-      it('should fetch new entity and histories according to the input', async () => {
-        const newRequest = 'a request'
-        await wrapper.vm.updateFilter(newRequest)
-        expect(actions.reloadAllData.calledTwice).toBeTrue()
-      })
-    })
     describe('#onGraphClick', () => {
       beforeEach(() => {
         wrapper = shallowMount(VSummaryContent, {

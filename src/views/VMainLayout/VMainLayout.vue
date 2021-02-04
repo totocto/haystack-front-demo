@@ -20,10 +20,8 @@
         v-model="comboboxInput"
         :items="getApiServers"
         label="Add or Remove a targeted API"
-        append-icon
         dense
         outlined
-        solo
         v-on:keyup.enter="updateAPI()"
       >
         <template
@@ -41,6 +39,15 @@
           </div>
         </template>
       </v-combobox>
+      <v-text-field
+        class="summary-content__text-field"
+        label="Filter API"
+        outlined
+        v-model="filterApi"
+        dense
+        background-color="white"
+        @change="updateFilter($event)"
+      />
       <v-spacer></v-spacer>
     </v-app-bar>
     <main>
@@ -58,6 +65,9 @@ export default {
     }
   },
   computed: {
+    filterApi() {
+      return this.$store.getters.filterApi
+    },
     getApiServers() {
       return this.$store.getters.apiServers.map(apiServer => apiServer.haystackApiHost)
     }
@@ -77,6 +87,12 @@ export default {
         this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
         this.comboboxInput = ''
+      }
+    },
+    async updateFilter(newFilter) {
+      if (newFilter !== this.$store.getters.filterApi) {
+        this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
+        await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
     }
   }
@@ -119,5 +135,12 @@ export default {
 }
 .v-list-item--link {
   cursor: default !important;
+}
+.summary-content__text-field {
+  margin-top: 23px !important;
+  width: 1%;
+  .v-input--is-focused {
+    background: white;
+  }
 }
 </style>

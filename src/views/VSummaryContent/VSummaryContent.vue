@@ -10,15 +10,6 @@
       ></c-graph>
     </div>
     <h2>Recherche dans Haystack</h2>
-    <v-text-field
-      class="summary-content__text-field"
-      label="Filter API"
-      outlined
-      v-model="filterApi"
-      dense
-      background-color="white"
-      @change="updateFilter($event)"
-    />
     <div v-if="isDataLoaded">
       <c-entity-row
         v-for="row in entitiesGroupedById"
@@ -117,6 +108,14 @@ export default {
     }
   },
   async beforeMount() {
+    /*
+    if (Object.keys(this.$route.query).length > 0) {
+      if (this.$route.query.apiServers)
+        await this.$store.commit('SET_API_SERVERS', { apiServers: this.$route.query.apiServers })
+      if (this.$route.query.apiServers)
+        await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.filterApi })
+    }
+    */
     await this.$store.dispatch('reloadAllData', { entity: '' })
   }
 }
@@ -128,12 +127,5 @@ export default {
 }
 .summary-content__entity-row {
   background-color: white;
-}
-.summary-content__text-field {
-  margin-top: 10px !important;
-  width: 30%;
-  .v-input--is-focused {
-    background: white;
-  }
 }
 </style>

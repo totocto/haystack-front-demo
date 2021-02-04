@@ -38,6 +38,14 @@ export const mutations = {
   SET_IS_DATA_LOADED(state, { isDataLoaded }) {
     state.isDataLoaded = isDataLoaded
   },
+  SET_API_SERVERS(state, { apiServers }) {
+    const newApiServers = []
+    // eslint-disable-next-line
+    apiServers.map(apiServer => {
+      newApiServers.push(new HaystackApiService({ haystackApiHost: apiServer }))
+    })
+    state.apiServers = apiServers
+  },
   SET_HAYSTACK_API(state, { haystackApiHost }) {
     const newApiServers = state.apiServers.slice()
     newApiServers.push(new HaystackApiService({ haystackApiHost }))

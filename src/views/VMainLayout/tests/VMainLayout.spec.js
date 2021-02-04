@@ -8,11 +8,12 @@ Vue.use(Vuex)
 let wrapper
 let actions
 let mutations
-const globalStubs = ['router-view', 'v-app-bar', 'v-img', 'v-spacer', 'v-combobox', 'v-icon']
+const globalStubs = ['router-view', 'v-app-bar', 'v-img', 'v-spacer', 'v-combobox', 'v-icon', 'v-text-field']
 describe('VMainLayout.vue', () => {
   beforeEach(() => {
     mutations = {
-      DELETE_HAYSTACK_API: sinon.stub()
+      DELETE_HAYSTACK_API: sinon.stub(),
+      SET_FILTER_API: sinon.stub()
     }
     actions = {
       init: sinon.stub(),
@@ -95,6 +96,15 @@ describe('VMainLayout.vue', () => {
           expect(actions.createApiServer.args[0][1]).toEqual({ haystackApiHost })
           expect(actions.reloadAllData.args[0][1]).toEqual({ entity: 'a filter' })
         })
+      })
+    })
+    describe('#updateFilter', () => {
+      it('should fetch new entity and histories according to the input', async () => {
+        const newRequest = 'a request'
+        await wrapper.vm.updateFilter(newRequest)
+        expect(actions.reloadAllData.calledOnce).toBeTrue()
+        expect(mutations.SET_FILTER_API.calledOnce).toBeTrue()
+        expect(mutations.SET_FILTER_API.args[0][1]).toEqual({ filterApi: newRequest })
       })
     })
   })

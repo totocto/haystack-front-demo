@@ -75,23 +75,28 @@ const formatService = {
     return mergeEntities.concat(entitiesFromFirstSource.concat(entitiesFromSecondSource))
   },
   getLinkBetweenEntities: (entitiesFromAllSource) => {
+    const colors = { fromSource: '#0d8bb5', outFromSource: '#c1e1ec' }
+    const radiusNode = { fromSource: 5, outFromSource: 3 }
     const entitiesLink = []
     const entitiesNameToEntitiesId = {}
     const colorsLinkOutFromSource = []
     entitiesFromAllSource.map(entities => {
       entities.map( entity => {
+        const formatedEntityId = formatService.formatEntityName(entity.id)
         Object.keys(entity).map(key => {
           if(formatService.isRef(entity[key]) && key !== 'id') {
             const formatedEntityName = formatService.formatEntityName(entity[key])
-            const formatedEntityId = formatService.formatIdEntity(entity[key])
-            const formatedLink = [formatService.formatEntityName(entity.id), formatedEntityName]
+            const formatedEntityIdLinked = formatService.formatIdEntity(entity[key])
+            const formatedLink = [formatedEntityId, formatedEntityName]
             if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key])) {
-              colorsLinkOutFromSource.push({ id: formatedEntityName, color: '#ff0000' })
+              colorsLinkOutFromSource.push({ id: formatedEntityName, color: colors.outFromSource, marker: { radius: radiusNode.outFromSource } })
             }
+            else colorsLinkOutFromSource.push({ id: formatedEntityName, color: colors.fromSource, marker: { radius: radiusNode.fromSource } })
               entitiesLink.push(formatedLink)
-              entitiesNameToEntitiesId[formatedEntityName] = formatedEntityId
+              entitiesNameToEntitiesId[formatedEntityName] = formatedEntityIdLinked
           }
         })
+        colorsLinkOutFromSource.push({ id: formatedEntityId, color: colors.fromSource, marker: { radius: radiusNode.fromSource } })
       })
     })
     return [entitiesLink, colorsLinkOutFromSource, entitiesNameToEntitiesId]
