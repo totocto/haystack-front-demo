@@ -76,13 +76,16 @@ export const getters = {
   }
 }
 export const actions = {
-  createApiServer(context, { haystackApiHost }) {
-    context.commit('SET_HAYSTACK_API', { haystackApiHost })
+  async createApiServer(context, { haystackApiHost }) {
+    await context.commit('SET_HAYSTACK_API', { haystackApiHost })
+  },
+  async commitNewEntities(context, { entities, apiNumber }) {
+    await context.commit('SET_ENTITIES', { entities, apiNumber })
   },
   async fetchEntity(context, { entity, apiNumber }) {
     const entities = await state.apiServers[apiNumber].getEntity(entity)
-    console.log(`RESULT FROM API ${apiNumber} entities are`, entities)
-    await context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
+    await context.dispatch('commitNewEntities', { entities: entities.rows, apiNumber })
+    // await context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
   async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
     const histories = await Promise.all(
@@ -100,14 +103,13 @@ export const actions = {
     await Promise.all(
       // eslint-disable-next-line
       await apiServers.map(async (apiServer, index) => {
-        console.log('APISEver', apiServer)
         await context.dispatch('fetchEntity', { entity, apiNumber: index })
       })
     )
   },
   async fetchAllHistories(context) {
     const { apiServers } = context.getters
-    const { entities } = context.getters
+    const entities = state.entities.slice()
     const groupEntities = entities.length === 1 ? entities[0] : formatService.groupAllEntitiesById(entities)
     const idsEntityWithHis = groupEntities
       .filter(entity => entity.his)
@@ -123,8 +125,9 @@ export const actions = {
   },
   async reloadAllData(context, { entity }) {
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
-    await context.dispatch('fetchAllEntity', { entity })
-    await context.dispatch('fetchAllHistories')
+    await Promise.all([await context.dispatch('fetchAllEntity', { entity })]).finally(async () => {
+      await context.dispatch('fetchAllHistories')
+    })
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
   }
 }

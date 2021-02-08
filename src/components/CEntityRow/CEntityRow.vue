@@ -15,7 +15,7 @@
           <template v-slot:[`item.value`]="{ item }">
             <a v-if="isCoordinate(item.value)" :href="getUrlCoordinate(item.value)">{{ item.value.substring(2) }}</a>
             <div v-else-if="isRef(item.value)">
-              <span>{{ getRefName(item.value) }}</span>
+              <span>{{ getRefName(item) }}</span>
               <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
             </div>
             <span v-else>{{ item.value }}</span>
@@ -95,7 +95,7 @@ export default {
       return this.isFromExternalSource ? `${this.id}-external` : this.id
     },
     entityName() {
-      return this.id.replace(`${this.entityId} `, '')
+      return formatService.formatEntityName(this.dataEntity)
     },
     categories() {
       return this.his.map(historic => (historic ? formatService.formatXAxis(historic) : null))
@@ -111,14 +111,24 @@ export default {
     }
   },
   methods: {
-    getRefName(idField) {
-      const entityName = idField.substring(2).split(' ')
+    getRefName(item) {
+      if (item.tag === 'id') {
+        const entityName = item.value.substring(2).split(' ')
+        if (entityName.length === 1) {
+          if (this.dataEntity.dis) return this.dataEntity.dis.substring(2)
+          return `@${entityName[0]}`
+        }
+        entityName.shift()
+        return entityName.join(' ')
+      }
+      const entityName = item.value.substring(2).split(' ')
+      if (entityName.length === 1) return entityName[0]
       entityName.shift()
       return entityName.join(' ')
     },
     isRef(item) {
       if (typeof item !== 'string') return false
-      return item.substring(0, 2) === 'p:'
+      return item.substring(0, 2) === 'r:'
     },
     isCoordinate(item) {
       if (typeof item !== 'string') return false
@@ -126,7 +136,7 @@ export default {
       return item.substring(0, 2) === 'c:'
     },
     copyText(item) {
-      const id = `@${item.value.split(' ')[0]}`
+      const id = `@${item.value.split(' ')[0].substring(2)}`
       const virtualElement = document.createElement('textarea')
       document.body.appendChild(virtualElement)
       virtualElement.value = id
@@ -140,8 +150,8 @@ export default {
     getEntityValue(dataEntityKey) {
       const value = this.dataEntity[dataEntityKey]
       if (value === 'm:') return '✓'
-      if (value.substring(0, 2) === 'n:') return Number(value.substring(2))
       if (value.substring(0, 2) === 'c:') return value
+      if (value.substring(0, 2) === 'r:') return value
       if (value === '') return ''
       return value.substring(2)
     }

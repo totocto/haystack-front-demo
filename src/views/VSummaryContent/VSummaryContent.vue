@@ -13,7 +13,7 @@
     <div v-if="isDataLoaded">
       <c-entity-row
         v-for="row in entitiesGroupedById"
-        :ref="getEntityName(row.id)"
+        :ref="getEntityName(row)"
         :key="row.id"
         :id="row.id"
         :dataEntity="row"
@@ -58,10 +58,9 @@ export default {
     },
     entitiesGroupedById() {
       // eslint-disable-next-line
-      if (this.entities.length === 1) return this.entities[0]
-      const test = this.groupByIdEntities(this.entities)
-      console.log('TESTTT', test)
-      return test
+      const entities = this.entities.slice()
+      if (entities.length === 1) return entities[0]
+      return this.groupByIdEntities(entities)
     }
   },
   methods: {
@@ -83,8 +82,8 @@ export default {
         window.scrollBy(0, -90)
       }
     },
-    getEntityName(idEntity) {
-      return formatService.formatEntityName(idEntity)
+    getEntityName(entity) {
+      return formatService.formatEntityName(entity)
     },
     groupByIdEntities(entities) {
       return formatService.groupAllEntitiesById(entities)
