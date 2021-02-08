@@ -59,19 +59,21 @@ export default {
     entitiesGroupedById() {
       // eslint-disable-next-line
       if (this.entities.length === 1) return this.entities[0]
-      return this.groupByIdEntities(this.entities)
+      const test = this.groupByIdEntities(this.entities)
+      console.log('TESTTT', test)
+      return test
     }
   },
   methods: {
-    isPointOutFromSource(pointName, colorEntities) {
-      return colorEntities.find(entityColor => entityColor.id === pointName)
+    isPointFromSource(pointName, colorEntities) {
+      return colorEntities.find(entityColor => entityColor.id === pointName && entityColor.color === '#0d8bb5')
     },
     async onGraphClick(pointName) {
       const linkBetweenEntities = this.getRelationGraphEntity(this.entities)
       const colorEntities = linkBetweenEntities[1]
       const entityNameToEntityId = linkBetweenEntities[2]
-      if (this.isPointOutFromSource(pointName, colorEntities)) {
-        const newApiFilter = `id==@${entityNameToEntityId[pointName]}`
+      if (!this.isPointFromSource(pointName, colorEntities)) {
+        const newApiFilter = `id==@${entityNameToEntityId[pointName] || pointName}`
         await this.$store.dispatch('reloadAllData', {
           entity: newApiFilter
         })

@@ -20,14 +20,22 @@ class HaystackApiService {
 
   // getEntity => read  and entity => filter
   async getEntity(entity) {
-    const response = await this.api.get(`/read?filter=${entity}`)
-    return response.data
+    try {
+      const response = await this.api.get(`/read?filter=${entity}`)
+      return response.data
+    } catch {
+      return []
+    }
   }
 
   // getHistory => hisRead
   async getHistory(id, range = 'today') {
-    const response = await this.api.get(`/hisRead?id=@${id}&range=${range}`)
-    return response.data.rows
+    try {
+      const response = await this.api.get(`/hisRead?id=@${id}&range=${range}`)
+      return response.data.rows
+    } catch {
+      return []
+    }
   }
 }
 

@@ -17,7 +17,7 @@ export const mutations = {
   SET_ENTITIES(state, { entities, apiNumber }) {
     const newEntities = state.entities.slice()
     // eslint-disable-next-line
-    newEntities.length < apiNumber ? newEntities.push(entities) : (newEntities[apiNumber] = entities)
+    newEntities.length < (apiNumber + 1) ? newEntities.push(entities) : (newEntities[apiNumber] = entities)
     state.entities = newEntities
   },
   SET_HISTORIES(state, { idHistories, apiNumber }) {
@@ -81,6 +81,7 @@ export const actions = {
   },
   async fetchEntity(context, { entity, apiNumber }) {
     const entities = await state.apiServers[apiNumber].getEntity(entity)
+    console.log(`RESULT FROM API ${apiNumber} entities are`, entities)
     await context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
   async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
@@ -98,7 +99,8 @@ export const actions = {
     const { apiServers } = context.getters
     await Promise.all(
       // eslint-disable-next-line
-      apiServers.map(async (apiServer, index) => {
+      await apiServers.map(async (apiServer, index) => {
+        console.log('APISEver', apiServer)
         await context.dispatch('fetchEntity', { entity, apiNumber: index })
       })
     )
@@ -121,10 +123,8 @@ export const actions = {
   },
   async reloadAllData(context, { entity }) {
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: false })
-    await Promise.all([
-      await context.dispatch('fetchAllEntity', { entity }),
-      await context.dispatch('fetchAllHistories')
-    ])
+    await context.dispatch('fetchAllEntity', { entity })
+    await context.dispatch('fetchAllHistories')
     context.commit('SET_IS_DATA_LOADED', { isDataLoaded: true })
   }
 }

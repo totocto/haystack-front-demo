@@ -19,12 +19,25 @@ const formatService = {
   },
   formatEntityName: id => {
     const entityName = id.substring(2).split(' ')
+    console.log('entityName', entityName)
+    if(entityName.length === 1) return entityName[0]
     entityName.shift()
     return entityName.join(' ')
   },
   formatMarketShare: marketShare => {
     if (!marketShare) return '- %'
     return `${marketShare.toFixed(2).replace('.', ',')} %`
+  },
+  idToNameEntity: entitiesfromAllSource => {
+    mapEntityIdToEntityName = {}
+    entitiesfromAllSource.map(entities => {
+      entities.map(entity => {
+        const entityId = formatService.formatentityId(entity)
+        const entityName = formatService.formatEntityName(entity)
+        mapEntityIdToEntityName[entityId] = entityName
+      })
+    })
+    return mapEntityIdToEntityName
   },
   formatXAxis: histories => {
     return histories.map(history => {
