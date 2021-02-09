@@ -1,6 +1,6 @@
 <template>
   <div class="summary-content">
-    <div class="summary-content__api-selector-container">
+    <div class="summary-content__graph">
       <c-graph
         v-if="isDataLoaded"
         @pointClicked="onGraphClick"
@@ -125,6 +125,9 @@ export default {
 <style lang="scss">
 .summary-content {
   padding-top: 25px;
+}
+.summary-content__graph {
+  padding-left: 100px;
 }
 .summary-content__entity-row {
   background-color: white;

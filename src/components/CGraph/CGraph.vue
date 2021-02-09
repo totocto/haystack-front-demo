@@ -124,8 +124,8 @@ export default {
       },
       chart: {
         type: 'networkgraph',
-        width: '700',
-        height: '400'
+        width: '1400',
+        height: '600'
       },
       plotOptions: {
         networkgraph: {
@@ -133,7 +133,7 @@ export default {
           layoutAlgorithm: {
             enableSimulation: false,
             friction: 1,
-            linkLength: 55
+            linkLength: 70
           },
           point: {
             events: {

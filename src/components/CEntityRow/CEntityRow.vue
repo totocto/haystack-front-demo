@@ -27,7 +27,6 @@
         class="entity-row__chart"
         v-if="displayChart"
         :id="chartId"
-        :categories="categories"
         :data="data"
         :unit="unit"
       />
@@ -89,7 +88,7 @@ export default {
       return this.id.split(' ')[0]
     },
     displayChart() {
-      return this.his.filter(his => his).length > 0 && this.isDataLoaded
+      return this.his.filter(his => (his ? his.length > 0 : his)).length > 0 && this.isDataLoaded
     },
     chartId() {
       return this.isFromExternalSource ? `${this.id}-external` : this.id
@@ -97,11 +96,8 @@ export default {
     entityName() {
       return formatService.formatEntityName(this.dataEntity)
     },
-    categories() {
-      return this.his.map(historic => (historic ? formatService.formatXAxis(historic) : null))
-    },
     data() {
-      return this.his.map(historic => (historic ? formatService.formatYAxis(historic) : null))
+      return this.his.map(historic => (historic ? formatService.formatCharts(historic) : null))
     },
     dataEntityKeys() {
       return Object.keys(this.dataEntity)
@@ -122,7 +118,7 @@ export default {
         return entityName.join(' ')
       }
       const entityName = item.value.substring(2).split(' ')
-      if (entityName.length === 1) return entityName[0]
+      if (entityName.length === 1) return `@${entityName[0]}`
       entityName.shift()
       return entityName.join(' ')
     },

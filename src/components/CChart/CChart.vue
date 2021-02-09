@@ -24,10 +24,6 @@ export default {
       type: String,
       default: ''
     },
-    categories: {
-      type: Array,
-      default: () => null
-    },
     data: {
       type: Array,
       default: () => []
@@ -39,7 +35,7 @@ export default {
   },
   data() {
     return {
-      colors: ['#DC143C', '#0000ff']
+      colors: ['#DC143C', '#0000ff', '#00a86b', '#cc5500']
     }
   },
   mounted() {
@@ -51,16 +47,8 @@ export default {
         width: '700',
         height: '400'
       },
-      yAxis: {
-        title: {
-          text: this.yLabel
-        }
-      },
       xAxis: {
-        title: {
-          text: this.xLabel
-        },
-        categories: this.categories[0]
+        type: 'datetime'
       },
       legend: {
         enabled: false
@@ -71,11 +59,9 @@ export default {
       tooltip: {
         valueSuffix: this.unit
       },
-      series: this.data
-        .filter(data => data)
-        .map((data, index) => {
-          return { data, color: this.colors[index] }
-        })
+      series: this.data.map((data, index) => {
+        return { data: this.data[index], color: this.colors[index] }
+      })
     })
   }
 }

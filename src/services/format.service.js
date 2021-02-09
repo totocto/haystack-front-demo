@@ -27,10 +27,6 @@ const formatService = {
     entityName.shift()
     return entityName.join(' ')
   },
-  formatMarketShare: marketShare => {
-    if (!marketShare) return '- %'
-    return `${marketShare.toFixed(2).replace('.', ',')} %`
-  },
   idToNameEntity: entitiesfromAllSource => {
     let mapEntityIdToEntityName = {}
     entitiesfromAllSource.map(entities => {
@@ -45,6 +41,11 @@ const formatService = {
   formatXAxis: histories => {
     return histories.map(history => {
       return dataUtils.formatDate(history.ts).date
+    })
+  },
+  formatCharts(historic) {
+    return historic.map(point => {
+      return [dataUtils.formatDate(point.ts),  dataUtils.formatVal(point.val)]
     })
   },
   formatYAxis: histories => {
@@ -98,7 +99,7 @@ const formatService = {
   },
   getLinkBetweenEntities: (entitiesFromAllSource) => {
     const colors = { fromSource: '#0d8bb5', outFromSource: '#c1e1ec' }
-    const radiusNode = { fromSource: 5, outFromSource: 3 }
+    const radiusNode = { fromSource: 10, outFromSource: 5 }
     const entitiesLink = []
     const entitiesNameToEntitiesId = formatService.idToNameEntity(entitiesFromAllSource)
     const colorsLinkOutFromSource = []
