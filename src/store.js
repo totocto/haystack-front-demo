@@ -9,7 +9,7 @@ window.env = window.env || {}
 const state = {
   entities: [[]],
   histories: [{}],
-  apiServers: [new HaystackApiService({ haystackApiHost: window.env.HAYSTACK_API_HOST })],
+  apiServers: [new HaystackApiService({ haystackApiHost: `${window.location.origin}${window.location.pathname}` })],
   isDataLoaded: false,
   filterApi: ''
 }
@@ -29,10 +29,12 @@ export const mutations = {
   DELETE_HAYSTACK_API(state, { haystackApiHost }) {
     const newApiServers = state.apiServers.slice()
     const newHistories = state.histories.slice()
+    const newEntities = state.entities.slice()
     const indexOfApiServerToDelete = state.apiServers.findIndex(
       apiServer => apiServer.haystackApiHost === haystackApiHost
     )
     state.histories = newHistories.slice(indexOfApiServerToDelete, indexOfApiServerToDelete)
+    state.entities = newEntities.slice(indexOfApiServerToDelete, indexOfApiServerToDelete)
     state.apiServers = newApiServers.filter(apiServer => apiServer.haystackApiHost !== haystackApiHost)
   },
   SET_IS_DATA_LOADED(state, { isDataLoaded }) {
@@ -84,7 +86,10 @@ export const actions = {
   },
   async fetchEntity(context, { entity, apiNumber }) {
     const entities = await state.apiServers[apiNumber].getEntity(entity)
-    await context.dispatch('commitNewEntities', { entities: entities.rows, apiNumber })
+    await context.dispatch('commitNewEntities', {
+      entities: formatService.addApiSourceInformationToEntity(entities.rows, apiNumber + 1),
+      apiNumber
+    })
     // await context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
   async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
@@ -114,7 +119,7 @@ export const actions = {
     const idsEntityWithHis = groupEntities
       .filter(entity => entity.his)
       .map(entity => {
-        return formatService.formatIdEntity(entity.id)
+        return formatService.formatIdEntity(entity.id.val)
       })
     await Promise.all(
       // eslint-disable-next-line

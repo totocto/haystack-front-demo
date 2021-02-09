@@ -14,10 +14,10 @@
       <c-entity-row
         v-for="row in entitiesGroupedById"
         :ref="getEntityName(row)"
-        :key="row.id"
-        :id="row.id"
+        :key="row.id.val"
+        :id="row.id.val"
         :dataEntity="row"
-        :his="getHistories(row.id)"
+        :his="getHistories(row.id.val)"
         :isDataLoaded="isDataLoaded"
         class="summary-content__entity-row"
       />
@@ -47,7 +47,7 @@ export default {
       return this.entitiesGroupedById
         .filter(entity => entity.his)
         .map(entity => {
-          return formatService.formatIdEntity(entity.id)
+          return formatService.formatIdEntity(entity.id.val)
         })
     },
     histories() {
@@ -65,7 +65,10 @@ export default {
   },
   methods: {
     isPointFromSource(pointName, colorEntities) {
-      return colorEntities.find(entityColor => entityColor.id === pointName && entityColor.color === '#0d8bb5')
+      return colorEntities.find(
+        entityColor =>
+          entityColor.id === pointName && ['#dc143c', '#0000ff', '#00a86b', '#cc5500'].includes(entityColor.color)
+      )
     },
     async onGraphClick(pointName) {
       const linkBetweenEntities = this.getRelationGraphEntity(this.entities)

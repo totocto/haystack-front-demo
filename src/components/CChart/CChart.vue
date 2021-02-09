@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      colors: ['#DC143C', '#0000ff', '#00a86b', '#cc5500']
+      colors: ['#dc143c', '#0000ff', '#00a86b', '#cc5500']
     }
   },
   mounted() {

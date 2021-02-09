@@ -12,16 +12,16 @@ const formatService = {
     let isEntityFromSource = false
     entitiesFromAllSource.map(entities => {
       entities.map(entity => {
-        if(entity.id === entityId) isEntityFromSource = true
+        if(entity.id.val === entityId) isEntityFromSource = true
       })
     })
     return isEntityFromSource
   },
   formatEntityName: entity => {
-    const id = entity.id
+    const id = entity.id.val
     const entityName = id.substring(2).split(' ')
     if(entityName.length === 1) {
-      if(entity.dis) return entity.dis.substring(2)
+      if(entity.dis) return entity.dis.val.substring(2)
       return `@${entityName[0]}`
     }
     entityName.shift()
@@ -31,7 +31,7 @@ const formatService = {
     let mapEntityIdToEntityName = {}
     entitiesfromAllSource.map(entities => {
       entities.map(entity => {
-        const entityId = formatService.formatIdEntity(entity.id)
+        const entityId = formatService.formatIdEntity(entity.id.val)
         const entityName = formatService.formatEntityName(entity)
         mapEntityIdToEntityName[entityId] = entityName
       })
@@ -56,26 +56,64 @@ const formatService = {
     delete object[oldKey]
     return object
   },
+  findSimilarObjectsKeyWithSameValues(object1,object2) {
+    const similarKeysWithSameValues = []
+    Object.keys(object1).map(key => {
+      if (object2.hasOwnProperty(key) && object2[key].val === object1[key].val && key !== 'id') {
+        similarKeysWithSameValues.push(key)
+      }
+    })
+    return similarKeysWithSameValues
+  },
   findSimilarObjectsKeyWithDifferentsValues(object1, object2) {
     const similarKeysWithDifferentsValues = []
     Object.keys(object1).map(key => {
-      if (object2.hasOwnProperty(key) && object2[key] !== object1[key]) {
+      if (object2.hasOwnProperty(key) && object2[key].val !== object1[key].val) {
         similarKeysWithDifferentsValues.push(key)
       }
     })
     return similarKeysWithDifferentsValues
   },
+  addApiSourceInformationToEntity: (entities, apiNumber) => {
+    entities.map(entity => {
+      Object.keys(entity).map(key => {
+        if (typeof entity[key] === 'string') {
+          const newEntityKey = { val: entity[key], apiSource: apiNumber}
+          entity[key] = newEntityKey
+        }
+      })
+    })
+    return entities
+  },
+  addApiSourceInformation: (entitiesFromAllSource) => {
+    entitiesFromAllSource.slice().map((entities, index) => {
+      entities.map(entity => {
+        Object.keys(entity).map(key => {
+          if (typeof entity[key] === 'string') {
+            const newEntityKey = { val: entity[key], apiSource: index}
+            entity[key] = newEntityKey
+          }
+        })
+      })
+    })
+    return entitiesFromAllSource
+  },
   groupAllEntitiesById: entitiesFromAllSources => {
-    const initialEntities = entitiesFromAllSources.shift()
-    return entitiesFromAllSources.reduce((acc, entities) =>  formatService.groupTwoEntitiesById(acc, entities), initialEntities)
+    let initialEntities = entitiesFromAllSources.slice().shift()
+    return entitiesFromAllSources.slice().reduce((acc, entities) => formatService.groupTwoEntitiesById(acc, entities), initialEntities)
   },
   groupTwoEntitiesById: (entitiesFromFirstSource, entitiesFromSecondSource) => {
     const mergeEntities = []
     entitiesFromFirstSource.map(entityFromFirstSource => {
-      const idFromSource = formatService.formatIdEntity(entityFromFirstSource.id)
+      const idFromSource = formatService.formatIdEntity(entityFromFirstSource.id.val)
       entitiesFromSecondSource.map(entityFromSecondSource => {
-        const idFromSecondSource = formatService.formatIdEntity(entityFromSecondSource.id)
+        const idFromSecondSource = formatService.formatIdEntity(entityFromSecondSource.id.val)
         if (idFromSource === idFromSecondSource) {
+          const keysWithSameValues = formatService.findSimilarObjectsKeyWithSameValues(
+            entityFromFirstSource,
+            entityFromSecondSource
+          )
+          keysWithSameValues.map(key => entityFromSecondSource[key] = entityFromFirstSource[key])
           const keysWithDifferentValues = formatService.findSimilarObjectsKeyWithDifferentsValues(
             entityFromFirstSource,
             entityFromSecondSource
@@ -85,39 +123,39 @@ const formatService = {
               entityFromSecondSource[key] = entityFromFirstSource[key]
             }
             else {
-              entityFromFirstSource = formatService.renameObjectKey(entityFromFirstSource, key, `${key}_1`)
-              entityFromSecondSource = formatService.renameObjectKey(entityFromSecondSource, key, `${key}_2`)
+              entityFromFirstSource = formatService.renameObjectKey(entityFromFirstSource, key, `${key}_${entityFromFirstSource[key].apiSource}`)
+              entityFromSecondSource = formatService.renameObjectKey(entityFromSecondSource, key, `${key}_${entityFromSecondSource[key].apiSource}`)
             }
           })
-          mergeEntities.push({ ...entityFromFirstSource, ...entityFromSecondSource })
-          entitiesFromSecondSource = entitiesFromSecondSource.filter(entity => formatService.formatIdEntity(entity.id) !== idFromSource)
-          entitiesFromFirstSource = entitiesFromFirstSource.filter(entity => formatService.formatIdEntity(entity.id) !== idFromSource)
+        mergeEntities.push({ ...entityFromSecondSource, ...entityFromFirstSource })
+        entitiesFromSecondSource = entitiesFromSecondSource.slice().filter(entity => formatService.formatIdEntity(entity.id.val) !== idFromSource)
+        entitiesFromFirstSource = entitiesFromFirstSource.slice().filter(entity => formatService.formatIdEntity(entity.id.val) !== idFromSource)
         }
       })
     })
     return mergeEntities.concat(entitiesFromFirstSource.concat(entitiesFromSecondSource))
   },
   getLinkBetweenEntities: (entitiesFromAllSource) => {
-    const colors = { fromSource: '#0d8bb5', outFromSource: '#c1e1ec' }
+    const colors = { fromSource: ['#dc143c', '#0000ff', '#00a86b', '#cc5500'], outFromSource: '#c1e1ec' }
     const radiusNode = { fromSource: 10, outFromSource: 5 }
     const entitiesLink = []
     const entitiesNameToEntitiesId = formatService.idToNameEntity(entitiesFromAllSource)
     const colorsLinkOutFromSource = []
     entitiesFromAllSource.map(entities => {
       entities.map( entity => {
-        const formatedEntityId = entitiesNameToEntitiesId[formatService.formatIdEntity(entity.id)]
+        const formatedEntityId = entitiesNameToEntitiesId[formatService.formatIdEntity(entity.id.val)]
         Object.keys(entity).map(key => {
-          if(formatService.isRef(entity[key]) && key !== 'id') {
-            const formatedEntityIdLinked = entitiesNameToEntitiesId[formatService.formatIdEntity(entity[key])] ? entitiesNameToEntitiesId[formatService.formatIdEntity(entity[key])] : formatService.formatIdEntity(entity[key])
+          if(formatService.isRef(entity[key].val) && key !== 'id') {
+            const formatedEntityIdLinked = entitiesNameToEntitiesId[formatService.formatIdEntity(entity[key].val)] ? entitiesNameToEntitiesId[formatService.formatIdEntity(entity[key].val)] : formatService.formatIdEntity(entity[key].val)
             const formatedLink = [formatedEntityId, formatedEntityIdLinked]
-            if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key])) {
+            if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key].val)) {
               colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.outFromSource, marker: { radius: radiusNode.outFromSource } })
             }
             else colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.fromSource, marker: { radius: radiusNode.fromSource } })
               entitiesLink.push(formatedLink)
           }
         })
-        colorsLinkOutFromSource.push({ id: formatedEntityId, color: colors.fromSource, marker: { radius: radiusNode.fromSource } })
+        colorsLinkOutFromSource.push({ id: formatedEntityId, color: colors.fromSource[entity.id.apiSource - 1], marker: { radius: radiusNode.fromSource } })
       })
     })
     return [entitiesLink, colorsLinkOutFromSource, entitiesNameToEntitiesId]

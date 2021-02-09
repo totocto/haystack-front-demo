@@ -44,7 +44,7 @@ export default {
       const path = ['M', left.plotX, left.plotY, right.plotX, right.plotY]
       const lastPoint = left
       const nextLastPoint = right
-      const pointRadius = 4
+      const pointRadius = 10
       const arrowLength = 5
       const arrowWidth = 5
 

@@ -29,6 +29,7 @@
         :id="chartId"
         :data="data"
         :unit="unit"
+        title="Historique des valeurs"
       />
     </div>
   </div>
@@ -79,9 +80,9 @@ export default {
   computed: {
     tableValues() {
       return Object.keys(this.dataEntity).map(key => {
-        const value = this.getEntityValue(key)
+        const result = this.getEntityValue(key)
         // eslint-disable-next-line
-        return { tag: key, value: value, row_class: value === '✓' ? `${key} haystack-marker` : key }
+        return { tag: key, value: result.val, row_class: [result.val === '✓' ? `${key} haystack-marker` : key, `apiSource_${result.apiSource}` ] }
       })
     },
     entityId() {
@@ -103,7 +104,7 @@ export default {
       return Object.keys(this.dataEntity)
     },
     unit() {
-      return this.dataEntity.unit ? this.dataEntity.unit.substring(2) : ''
+      return this.dataEntity.unit ? this.dataEntity.unit.val.substring(2) : ''
     }
   },
   methods: {
@@ -111,7 +112,7 @@ export default {
       if (item.tag === 'id') {
         const entityName = item.value.substring(2).split(' ')
         if (entityName.length === 1) {
-          if (this.dataEntity.dis) return this.dataEntity.dis.substring(2)
+          if (this.dataEntity.dis) return this.dataEntity.dis.val.substring(2)
           return `@${entityName[0]}`
         }
         entityName.shift()
@@ -144,12 +145,12 @@ export default {
       return `http://www.google.com/maps/place/${coordinate.substring(2)}`
     },
     getEntityValue(dataEntityKey) {
-      const value = this.dataEntity[dataEntityKey]
-      if (value === 'm:') return '✓'
-      if (value.substring(0, 2) === 'c:') return value
-      if (value.substring(0, 2) === 'r:') return value
-      if (value === '') return ''
-      return value.substring(2)
+      const value = this.dataEntity[dataEntityKey].val
+      if (value === 'm:') return { val: '✓', apiSource: this.dataEntity[dataEntityKey].apiSource }
+      if (value.substring(0, 2) === 'c:') return { val: value, apiSource: this.dataEntity[dataEntityKey].apiSource }
+      if (value.substring(0, 2) === 'r:') return { val: value, apiSource: this.dataEntity[dataEntityKey].apiSource }
+      if (value === '') return { val: '', apiSource: this.dataEntity[dataEntityKey].apiSource }
+      return { val: value.substring(2), apiSource: this.dataEntity[dataEntityKey].apiSource }
     }
   }
 }
@@ -190,5 +191,17 @@ export default {
   font-weight: bold;
   letter-spacing: normal;
   background-color: white !important;
+}
+.apiSource_1 {
+  background: #d4bbbb;
+}
+.apiSource_2 {
+  background: #8080ff;
+}
+.apiSource_3 {
+  background: #80a86b;
+}
+.apiSource_4 {
+  background: #bb9857;
 }
 </style>

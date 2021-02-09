@@ -33,6 +33,7 @@
             <span class="pr-2">
               {{ item }}
             </span>
+            <span class="circle" :style="circleApiClass(item)"></span>
             <v-icon size="28" class="material-icons main-layout__combobox-image" @click="changeApiServers(item)"
               >delete</v-icon
             >
@@ -57,6 +58,8 @@
 </template>
 
 <script>
+import { API_COLORS } from '../../services'
+
 export default {
   name: 'VMainLayout',
   data() {
@@ -94,6 +97,10 @@ export default {
         this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
         await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
+    },
+    circleApiClass(apiHost) {
+      const apiNumber = this.$store.getters.apiServers.findIndex(apiServer => apiServer.haystackApiHost === apiHost)
+      return `background: ${API_COLORS[apiNumber]};`
     }
   }
 }
@@ -131,6 +138,7 @@ export default {
 }
 .main-layout__combobox-image {
   position: absolute !important;
+  top: 4px;
   right: 20px;
 }
 .v-list-item--link {
@@ -142,5 +150,15 @@ export default {
   .v-input--is-focused {
     background: white;
   }
+}
+.circle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  -webkit-border-radius: 25px;
+  -moz-border-radius: 25px;
+  border-radius: 25px;
+  //background: red;
+  right: 60px;
 }
 </style>
