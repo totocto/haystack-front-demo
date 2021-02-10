@@ -13,10 +13,17 @@
           item-class="row_class"
         >
           <template v-slot:[`item.value`]="{ item }">
-            <a v-if="isCoordinate(item.value)" :href="getUrlCoordinate(item.value)">{{ item.value.substring(2) }}</a>
+            <div v-if="isCoordinate(item.value)">
+              <a :href="getUrlCoordinate(item.value)" target="_blank">{{ item.value.substring(2) }}</a>
+              <v-icon v-if="isDuplicateKey(item.tag)" class="material-icons entity-row__click-button">warning</v-icon>
+            </div>
             <div v-else-if="isRef(item.value)">
               <span>{{ getRefName(item) }}</span>
               <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
+            </div>
+            <div v-else-if="isDuplicateKey(item.tag)">
+              <span>{{ item.value }}</span>
+              <v-icon class="material-icons entity-row__click-button">warning</v-icon>
             </div>
             <span v-else>{{ item.value }}</span>
           </template>
@@ -29,7 +36,7 @@
         :id="chartId"
         :data="data"
         :unit="unit"
-        title="Historique des valeurs"
+        title="Historic values"
       />
     </div>
   </div>
@@ -126,6 +133,10 @@ export default {
     isRef(item) {
       if (typeof item !== 'string') return false
       return item.substring(0, 2) === 'r:'
+    },
+    isDuplicateKey(item) {
+      const itemSplitted = item.split('_')
+      return itemSplitted.length > 1 && Number(itemSplitted[1])
     },
     isCoordinate(item) {
       if (typeof item !== 'string') return false

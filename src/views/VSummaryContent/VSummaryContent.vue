@@ -5,11 +5,11 @@
         v-if="isDataLoaded"
         @pointClicked="onGraphClick"
         :dataEntities="getRelationGraphEntity(entities)"
-        id="test"
-        title="Relation entre les entités"
+        id="graph-entities"
+        title="Entities links"
       ></c-graph>
     </div>
-    <h2>Recherche dans Haystack</h2>
+    <h2 class="summary-content__title">Entities description</h2>
     <div v-if="isDataLoaded">
       <c-entity-row
         v-for="row in entitiesGroupedById"
@@ -128,6 +128,9 @@ export default {
 <style lang="scss">
 .summary-content {
   padding-top: 25px;
+}
+.summary-content__title {
+  padding: 20px 20px 20px 5px;
 }
 .summary-content__graph {
   padding-left: 100px;

@@ -44,7 +44,7 @@ export default {
       const path = ['M', left.plotX, left.plotY, right.plotX, right.plotY]
       const lastPoint = left
       const nextLastPoint = right
-      const pointRadius = 10
+      const pointRadius = 40
       const arrowLength = 5
       const arrowWidth = 5
 
@@ -146,6 +146,12 @@ export default {
       },
       credits: {
         enabled: false
+      },
+      tooltip : {
+        enabled : true, 
+        formatter : function() {
+          return `<div> <span> ${this.point.dis} </span> </div>`
+        }
       },
       series: [
         {

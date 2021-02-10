@@ -98,9 +98,49 @@ const formatService = {
     })
     return entitiesFromAllSource
   },
+  getKeyAlreadyDuplicated: (firstEntity, secondEntity) => {
+    let keysAlreadyDuplicated = Object.keys(firstEntity).map(key => {
+      const keySplitted = key.split('_')
+      if (keySplitted.length > 1 && Number(keySplitted[1])) {
+        const mappingDuplicateKeyToActualKey = {}
+        mappingDuplicateKeyToActualKey[keySplitted[0]] = key
+        return mappingDuplicateKeyToActualKey
+      }
+    }).filter(key => key)
+    Object.keys(secondEntity).map(keyFromSecondEntity => {
+      const keyFromFirstEntity = keysAlreadyDuplicated.filter(key => key[keyFromSecondEntity])
+      if (keyFromFirstEntity.length > 0) {
+        if (keyFromFirstEntity.filter(
+          key =>  firstEntity[key[keyFromSecondEntity]].val === secondEntity[keyFromSecondEntity].val
+          ).length === 0) {
+            secondEntity = formatService.renameObjectKey(
+              secondEntity,
+              keyFromSecondEntity,
+              `${keyFromSecondEntity}_${secondEntity[keyFromSecondEntity].apiSource}`
+              )
+          }
+        else {
+          delete secondEntity[keyFromSecondEntity]
+        }
+      }
+    })
+    return secondEntity
+  },
+  copyArrayOfArrayWithObject: arrayOfArrayWithObject => {
+    const arrayOfArrayCopy =  []
+    arrayOfArrayWithObject.map(arrayWithObject => {
+      let arrayCopy = []
+      arrayWithObject.map(object => {
+        arrayCopy.push({ ...object })
+      })
+      arrayOfArrayCopy.push(arrayCopy)
+    })
+    return arrayOfArrayCopy
+  },
   groupAllEntitiesById: entitiesFromAllSources => {
-    let initialEntities = entitiesFromAllSources.slice().shift()
-    return entitiesFromAllSources.slice().reduce((acc, entities) => formatService.groupTwoEntitiesById(acc, entities), initialEntities)
+    let entitiesFromAllSourceCopy = formatService.copyArrayOfArrayWithObject(entitiesFromAllSources)
+    let initialEntities = entitiesFromAllSourceCopy.shift()
+    return entitiesFromAllSourceCopy.reduce((acc, entities) => formatService.groupTwoEntitiesById(acc, entities), initialEntities)
   },
   groupTwoEntitiesById: (entitiesFromFirstSource, entitiesFromSecondSource) => {
     const mergeEntities = []
@@ -114,6 +154,7 @@ const formatService = {
             entityFromSecondSource
           )
           keysWithSameValues.map(key => entityFromSecondSource[key] = entityFromFirstSource[key])
+          entityFromSecondSource = formatService.getKeyAlreadyDuplicated(entityFromFirstSource, entityFromSecondSource)
           const keysWithDifferentValues = formatService.findSimilarObjectsKeyWithDifferentsValues(
             entityFromFirstSource,
             entityFromSecondSource
@@ -125,11 +166,13 @@ const formatService = {
             else {
               entityFromFirstSource = formatService.renameObjectKey(entityFromFirstSource, key, `${key}_${entityFromFirstSource[key].apiSource}`)
               entityFromSecondSource = formatService.renameObjectKey(entityFromSecondSource, key, `${key}_${entityFromSecondSource[key].apiSource}`)
+              delete entityFromFirstSource[key]
+              delete entityFromSecondSource[key]
             }
           })
-        mergeEntities.push({ ...entityFromSecondSource, ...entityFromFirstSource })
-        entitiesFromSecondSource = entitiesFromSecondSource.slice().filter(entity => formatService.formatIdEntity(entity.id.val) !== idFromSource)
-        entitiesFromFirstSource = entitiesFromFirstSource.slice().filter(entity => formatService.formatIdEntity(entity.id.val) !== idFromSource)
+          mergeEntities.push({ ...entityFromFirstSource, ...entityFromSecondSource })
+          entitiesFromSecondSource = entitiesFromSecondSource.filter(entity => formatService.formatIdEntity(entity.id.val) !== idFromSource)
+          entitiesFromFirstSource = entitiesFromFirstSource.filter(entity => formatService.formatIdEntity(entity.id.val) !== idFromSource)
         }
       })
     })
@@ -155,7 +198,7 @@ const formatService = {
               entitiesLink.push(formatedLink)
           }
         })
-        colorsLinkOutFromSource.push({ id: formatedEntityId, color: colors.fromSource[entity.id.apiSource - 1], marker: { radius: radiusNode.fromSource } })
+        colorsLinkOutFromSource.push({ id: formatedEntityId, color: colors.fromSource[entity.id.apiSource - 1], dis: entity.dis ? entity.dis.val.substring(2) : formatedEntityId, marker: { radius: radiusNode.fromSource } })
       })
     })
     return [entitiesLink, colorsLinkOutFromSource, entitiesNameToEntitiesId]

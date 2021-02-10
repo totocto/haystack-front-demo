@@ -13,7 +13,7 @@
           width="90"
           disabled
         />
-        <h2 class="main-layout__title">Haystack Démo</h2>
+        <h2 class="main-layout__title">Haystack</h2>
       </div>
       <v-combobox
         class="main-layout__combobox"
@@ -30,10 +30,10 @@
           }"
         >
           <div class="main-layout__combobox-row">
-            <span class="pr-2">
+            <span class="circle" :style="circleApiClass(item)"></span>
+            <span class="pr-2 main-layout__combobox-api-text">
               {{ item }}
             </span>
-            <span class="circle" :style="circleApiClass(item)"></span>
             <v-icon size="28" class="material-icons main-layout__combobox-image" @click="changeApiServers(item)"
               >delete</v-icon
             >
@@ -42,7 +42,7 @@
       </v-combobox>
       <v-text-field
         class="summary-content__text-field"
-        label="Filter API"
+        label="Filter"
         outlined
         v-model="filterApi"
         dense
@@ -151,6 +151,9 @@ export default {
     background: white;
   }
 }
+.main-layout__combobox-api-text {
+  padding-left: 15px;
+}
 .circle {
   position: absolute;
   width: 20px;
@@ -159,6 +162,7 @@ export default {
   -moz-border-radius: 25px;
   border-radius: 25px;
   //background: red;
-  right: 60px;
+  left: 5px;
+  top: 9px;
 }
 </style>
