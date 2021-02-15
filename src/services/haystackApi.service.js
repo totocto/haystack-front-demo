@@ -21,7 +21,7 @@ class HaystackApiService {
   // getEntity => read  and entity => filter
   async getEntity(entity) {
     try {
-      const response = await this.api.get(`/read?filter=${entity}&limit=100`)
+      const response = await this.api.get(`/read?filter=${entity}&limit=40`)
       return response.data
     } catch {
       return []

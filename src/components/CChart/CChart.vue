@@ -4,6 +4,7 @@
 
 <script>
 import Highcharts from 'highcharts'
+import { API_COLORS } from '@/services'
 
 export default {
   name: 'CChart.vue',
@@ -60,7 +61,7 @@ export default {
         valueSuffix: this.unit
       },
       series: this.data.map((data, index) => {
-        return { data: this.data[index], color: this.colors[index] }
+        return { data: this.data[index], color: API_COLORS[index] }
       })
     })
   }

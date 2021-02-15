@@ -9,7 +9,6 @@
         title="Entities links"
       ></c-graph>
     </div>
-    <h2 class="summary-content__title">Entities description</h2>
     <div v-if="isDataLoaded">
       <c-entity-row
         v-for="row in entitiesGroupedById"
@@ -129,11 +128,12 @@ export default {
 .summary-content {
   padding-top: 25px;
 }
-.summary-content__title {
-  padding: 20px 20px 20px 5px;
-}
 .summary-content__graph {
-  padding-left: 100px;
+  width: 80%;
+  margin: 0 auto;
+  justify-content: center;
+  padding-bottom: 20px;
+  // padding-left: 130px;
 }
 .summary-content__entity-row {
   background-color: white;

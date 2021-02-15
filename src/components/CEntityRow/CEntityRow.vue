@@ -6,9 +6,9 @@
         <v-data-table
           :headers="headers"
           :items="tableValues"
-          :items-per-page="5"
           :hide-default-footer="true"
           :disable-pagination="true"
+          :custom-sort="customSort"
           :dense="true"
           item-class="row_class"
         >
@@ -23,27 +23,28 @@
             </div>
             <div v-else-if="isDuplicateKey(item.tag)">
               <span>{{ item.value }}</span>
-              <v-icon class="material-icons entity-row__click-button">warning</v-icon>
+              <v-icon v-if="hisUri(item.tag)" class="material-icons entity-row__click-button">warning</v-icon>
             </div>
             <span v-else>{{ item.value }}</span>
           </template>
         </v-data-table>
       </div>
-      <c-chart
-        data-test-history-chart
-        class="entity-row__chart"
-        v-if="displayChart"
-        :id="chartId"
-        :data="data"
-        :unit="unit"
-        title="Historic values"
-      />
+      <div class="entity-row__chart">
+        <c-chart
+          data-test-history-chart
+          v-if="displayChart"
+          :id="chartId"
+          :data="sortDataChart(data)"
+          :unit="unit"
+          title="Historic values"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { formatService } from '@/services'
+import { formatService, dataUtils } from '@/services'
 import CChart from '../CChart/CChart.vue'
 
 export default {
@@ -80,7 +81,7 @@ export default {
           sortable: false,
           value: 'tag'
         },
-        { text: 'Value', value: 'value' }
+        { text: 'Value', value: 'value', sortable: false }
       ]
     }
   },
@@ -89,7 +90,7 @@ export default {
       return Object.keys(this.dataEntity).map(key => {
         const result = this.getEntityValue(key)
         // eslint-disable-next-line
-        return { tag: key, value: result.val, row_class: [result.val === '✓' ? `${key} haystack-marker` : key, `apiSource_${result.apiSource}` ] }
+        return { tag: key.split('_')[0], value: result.val, row_class: [result.val === '✓' ? `${key} haystack-marker` : key, `apiSource_${result.apiSource}` ] }
       })
     },
     entityId() {
@@ -115,6 +116,9 @@ export default {
     }
   },
   methods: {
+    sortDataChart(dataChart) {
+      return dataUtils.sortChartDataByDate(dataChart)
+    },
     getRefName(item) {
       if (item.tag === 'id') {
         const entityName = item.value.substring(2).split(' ')
@@ -130,18 +134,37 @@ export default {
       entityName.shift()
       return entityName.join(' ')
     },
+    hisUri(tag) {
+      if (tag === 'hisURI') return false
+      return true
+    },
     isRef(item) {
       if (typeof item !== 'string') return false
       return item.substring(0, 2) === 'r:'
     },
     isDuplicateKey(item) {
-      const itemSplitted = item.split('_')
-      return itemSplitted.length > 1 && Number(itemSplitted[1])
+      const keysDuplicated = Object.keys(this.dataEntity).filter(key => key.split('_')[0] === item)
+      // const itemSplitted = item.split('_')
+      return keysDuplicated.length > 1
+      // return itemSplitted.length > 1 && Number(itemSplitted[1])
     },
     isCoordinate(item) {
       if (typeof item !== 'string') return false
       // if (item.value.length < 4) return false
       return item.substring(0, 2) === 'c:'
+    },
+    customSort(items) {
+      const copyItems = items.slice()
+      const sortedItems = copyItems
+        .sort(function(item1, item2) {
+          return item1.tag.localeCompare(item2.tag)
+        })
+        .sort(function(item1, item2) {
+          if (item1.tag === 'id') return -1
+          if (item2.tag === 'id') return 1
+          return 0
+        })
+      return sortedItems
     },
     copyText(item) {
       const id = `@${item.value.split(' ')[0].substring(2)}`
@@ -152,6 +175,14 @@ export default {
       document.execCommand('copy')
       document.body.removeChild(virtualElement)
     },
+    getNumberValue(dataEntityKey) {
+      const numberStringValue = this.dataEntity[dataEntityKey].val.substring(2).split(' ')
+      const numberValue =
+        numberStringValue.length > 1
+          ? `${Number(numberStringValue[0])} ${numberStringValue[1]}`
+          : Number(numberStringValue[0])
+      return { val: numberValue, apiSource: this.dataEntity[dataEntityKey].apiSource }
+    },
     getUrlCoordinate(coordinate) {
       return `http://www.google.com/maps/place/${coordinate.substring(2)}`
     },
@@ -159,6 +190,8 @@ export default {
       const value = this.dataEntity[dataEntityKey].val
       if (value === 'm:') return { val: '✓', apiSource: this.dataEntity[dataEntityKey].apiSource }
       if (value.substring(0, 2) === 'c:') return { val: value, apiSource: this.dataEntity[dataEntityKey].apiSource }
+      if (value.substring(0, 2) === 'r:') return { val: value, apiSource: this.dataEntity[dataEntityKey].apiSource }
+      if (value.substring(0, 2) === 'n:') return this.getNumberValue(dataEntityKey)
       if (value.substring(0, 2) === 'r:') return { val: value, apiSource: this.dataEntity[dataEntityKey].apiSource }
       if (value === '') return { val: '', apiSource: this.dataEntity[dataEntityKey].apiSource }
       return { val: value.substring(2), apiSource: this.dataEntity[dataEntityKey].apiSource }
@@ -173,7 +206,7 @@ export default {
   flex-direction: row;
 }
 .entity-row__table {
-  width: 500px;
+  width: 30%;
 }
 .entity-row__title {
   padding-bottom: 20px;
@@ -189,8 +222,8 @@ export default {
   margin-bottom: 30px;
 }
 .entity-row__chart {
-  float: right;
-  padding-left: 200px;
+  width: 50%;
+  margin: 0 auto;
 }
 .entity-row__click-button {
   float: right;

@@ -8,6 +8,14 @@ const dataUtils = {
       return Number(valueString.split(' ')[0].substring(2))
     }
     return Number(valueString.substring(2))
+  },
+  sortChartDataByDate(dataChart) {
+    const dataChartSorted = dataChart.slice()
+    return dataChartSorted.map(dataApi =>
+      dataApi.sort(function(firstData, secondData) {
+        return secondData[0] - firstData[0]
+      })
+    )
   }
 }
 

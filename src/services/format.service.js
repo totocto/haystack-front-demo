@@ -12,7 +12,7 @@ const formatService = {
     let isEntityFromSource = false
     entitiesFromAllSource.map(entities => {
       entities.map(entity => {
-        if(entity.id.val === entityId) isEntityFromSource = true
+        if(entity.id.val === entityId || entity.id.val.split(' ')[0] === entityId.split(' ')[0]) isEntityFromSource = true
       })
     })
     return isEntityFromSource
@@ -153,7 +153,10 @@ const formatService = {
             entityFromFirstSource,
             entityFromSecondSource
           )
-          keysWithSameValues.map(key => entityFromSecondSource[key] = entityFromFirstSource[key])
+          keysWithSameValues.map(key => {
+            entityFromSecondSource[key] = entityFromFirstSource[key]
+          })
+          entityFromSecondSource['id'] = entityFromFirstSource['id']
           entityFromSecondSource = formatService.getKeyAlreadyDuplicated(entityFromFirstSource, entityFromSecondSource)
           const keysWithDifferentValues = formatService.findSimilarObjectsKeyWithDifferentsValues(
             entityFromFirstSource,
@@ -194,8 +197,8 @@ const formatService = {
             if(!formatService.isEntityFromSource(entitiesFromAllSource, entity[key].val)) {
               colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.outFromSource, marker: { radius: radiusNode.outFromSource } })
             }
-            else colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.fromSource, marker: { radius: radiusNode.fromSource } })
-              entitiesLink.push(formatedLink)
+            else colorsLinkOutFromSource.push({ id: formatedEntityIdLinked, color: colors.fromSource[entity.id.apiSource - 1], marker: { radius: radiusNode.fromSource } })
+            entitiesLink.push(formatedLink)
           }
         })
         colorsLinkOutFromSource.push({ id: formatedEntityId, color: colors.fromSource[entity.id.apiSource - 1], dis: entity.dis ? entity.dis.val.substring(2) : formatedEntityId, marker: { radius: radiusNode.fromSource } })

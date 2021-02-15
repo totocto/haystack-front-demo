@@ -19,7 +19,7 @@
         class="main-layout__combobox"
         v-model="comboboxInput"
         :items="getApiServers"
-        label="Add or Remove a targeted API"
+        label="Add or Remove a targeted Endpoint API"
         dense
         outlined
         v-on:keyup.enter="updateAPI()"
