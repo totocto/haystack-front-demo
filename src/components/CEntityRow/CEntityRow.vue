@@ -36,7 +36,7 @@
           :id="chartId"
           :data="sortDataChart(data)"
           :unit="unit"
-          title="Historic values"
+          title="Historical values"
         />
       </div>
     </div>
