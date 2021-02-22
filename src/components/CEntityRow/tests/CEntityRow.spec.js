@@ -12,7 +12,14 @@ describe('CEntityRow.vue', () => {
       propsData: {
         id: 'id1',
         his: [[{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }], []],
-        dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000', coordinate: 'c:12,12' },
+        dataEntity: {
+          id: { val: 'id1', apiSource: 1 },
+          'Some Key': { val: 's:A val1', apiSource: 1 },
+          dis: { val: 'a description', apisource: 1 },
+          marker: { val: 'm:', apiSource: 1 },
+          number: { val: 'n:64.00000', apiSource: 1 },
+          coordinate: { val: 'c:12,12', apiSource: 1 }
+        },
         isFromExternalSource: false,
         isDataLoaded: true
       }
@@ -28,18 +35,6 @@ describe('CEntityRow.vue', () => {
     expect(wrapper.find('[data-test-entity-title]').exists()).toBeTrue()
   })
   describe('When entity has a his marker', () => {
-    beforeEach(() => {
-      wrapper = shallowMount(CEntityRow, {
-        stubs: ['v-data-table'],
-        propsData: {
-          id: 'id1',
-          his: [[{ ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' }], null],
-          dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000' },
-          isFromExternalSource: false,
-          isDataLoaded: true
-        }
-      })
-    })
     describe('When data are loaded', () => {
       it('should display a chart', () => {
         expect(wrapper.find('[data-test-history-chart]').exists()).toBeTrue()
@@ -59,7 +54,12 @@ describe('CEntityRow.vue', () => {
         propsData: {
           id: 'id1',
           his: [null, null],
-          dataEntity: { 'Some Key': 's:A val1', marker: 'm:', number: 'n:64.00000' },
+          dataEntity: {
+            id: { val: 'id1', apiSource: 1 },
+            'Some Key': { val: 's:A val1', apiSource: 1 },
+            marker: { val: 'm:', apiSource: 1 },
+            number: { val: 'n:64.00000', apiSource: 1 }
+          },
           isFromExternalSource: false,
           isDataLoaded: true
         }
@@ -74,22 +74,26 @@ describe('CEntityRow.vue', () => {
       it('should return formatted string value when value is a string', () => {
         const dataEntityKey = 'Some Key'
         const result = wrapper.vm.getEntityValue(dataEntityKey)
-        expect(result).toBe('A val1')
+        const expected = { val: 'A val1', apiSource: 1 }
+        expect(result).toEqual(expected)
       })
       it('should return formatted number value when value is a number', () => {
         const dataEntityKey = 'number'
         const result = wrapper.vm.getEntityValue(dataEntityKey)
-        expect(result).toBe(64)
+        const expected = { val: 64, apiSource: 1 }
+        expect(result).toEqual(expected)
       })
       it('should return tick when value is a marker', () => {
         const dataEntityKey = 'marker'
         const result = wrapper.vm.getEntityValue(dataEntityKey)
-        expect(result).toBe('✓')
+        const expected = { val: '✓', apiSource: 1 }
+        expect(result).toEqual(expected)
       })
       it('should return brut value when coordinate', () => {
         const dataEntityKey = 'coordinate'
         const result = wrapper.vm.getEntityValue(dataEntityKey)
-        expect(result).toBe('c:12,12')
+        const expected = { val: 'c:12,12', apiSource: 1 }
+        expect(result).toEqual(expected)
       })
     })
     describe('#getUrlCoordinate', () => {
@@ -102,7 +106,7 @@ describe('CEntityRow.vue', () => {
     })
     describe('#isRef', () => {
       it('should return true', () => {
-        const value = 'p:anything'
+        const value = 'r:anything'
         const result = wrapper.vm.isRef(value)
         expect(result).toBeTrue()
       })
@@ -112,12 +116,28 @@ describe('CEntityRow.vue', () => {
         expect(result).toBeFalse()
       })
     })
+    // REFACTO TO DO
     describe('#getRefName', () => {
-      it('should return formatted name of idEntity', () => {
-        const idEntity = 'p:demo-name The Real Name'
-        const result = wrapper.vm.getRefName(idEntity)
-        const expected = 'The Real Name'
-        expect(result).toBe(expected)
+      describe('when item is of type id', () => {
+        describe('When entity has a description', () => {
+          it('should return entity description', () => {
+            const entity = { tag: 'id', value: 'id1' }
+            const result = wrapper.vm.getRefName(entity)
+            const expected = 'description'
+            expect(result).toBe(expected)
+          })
+        })
+        describe('When entity has not a description', () => {
+          it('should return entity name', () => {
+            wrapper.setProps({
+              dataEntity: { id: { val: 'id1', apiSource: 1 }, number: { val: 'n:64.00000', apiSource: 1 } }
+            })
+            const entity = { tag: 'id', value: 'id1' }
+            const result = wrapper.vm.getRefName(entity)
+            const expected = 'description'
+            expect(result).toBe(expected)
+          })
+        })
       })
     })
     describe('#isCoordinate', () => {

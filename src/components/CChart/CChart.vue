@@ -60,9 +60,7 @@ export default {
       tooltip: {
         valueSuffix: this.unit
       },
-      series: this.data.map((data, index) => {
-        return { data: this.data[index], color: API_COLORS[index] }
-      })
+      series: this.data.map((data, index) => ({ data: this.data[index], color: API_COLORS[index] }))
     })
   }
 }

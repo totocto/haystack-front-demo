@@ -156,10 +156,8 @@ export default {
     customSort(items) {
       const copyItems = items.slice()
       const sortedItems = copyItems
-        .sort(function(item1, item2) {
-          return item1.tag.localeCompare(item2.tag)
-        })
-        .sort(function(item1, item2) {
+        .sort((item1, item2) => item1.tag.localeCompare(item2.tag))
+        .sort((item1, item2) => {
           if (item1.tag === 'id') return -1
           if (item2.tag === 'id') return 1
           return 0

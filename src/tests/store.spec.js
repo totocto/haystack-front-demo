@@ -4,8 +4,15 @@ import sinon from 'sinon'
 import { actions, getters, mutations } from '../store'
 import HaystackApiService from '../services/haystackApi.service'
 
-const { SET_ENTITIES, SET_HISTORIES, SET_HAYSTACK_API, SET_FILTER_API, DELETE_HAYSTACK_API } = mutations
-const entities = { rows: ['entity1', 'entity2'] }
+const {
+  SET_ENTITIES,
+  SET_HISTORIES,
+  SET_HAYSTACK_API,
+  SET_FILTER_API,
+  DELETE_HAYSTACK_API,
+  SET_API_SERVERS
+} = mutations
+const entities = { rows: [{ entityName: 'entity1' }, { entityName: 'entity2' }] }
 describe('store', () => {
   beforeAll(() => {
     const getEntityStub = sinon.stub(HaystackApiService.prototype, 'getEntity')
@@ -53,7 +60,7 @@ describe('store', () => {
     describe('#DELETE_HAYSTACK_API', () => {
       it('should delete the corresponding apiServer', () => {
         const haystackApiHost = 'a server'
-        const state = { apiServers: [{ haystackApiHost }], histories: [['an history']] }
+        const state = { apiServers: [{ haystackApiHost }], histories: [['an history']], entities: [['an entity']] }
         DELETE_HAYSTACK_API(state, { haystackApiHost })
         expect(state.apiServers).toEqual([])
         expect(state.histories).toEqual([])
@@ -77,6 +84,21 @@ describe('store', () => {
           SET_HAYSTACK_API(state, { haystackApiHost })
           expect(state.apiServers).toEqual(expected)
         })
+      })
+    })
+    describe('#SET_API_SERVERS', () => {
+      it('should create default apiServers in store', () => {
+        // GIVEN
+        const state = { apiServers: [] }
+        const apiServers = ['apiServer1', 'apiServer2']
+        // WHEN
+        SET_API_SERVERS(state, { apiServers })
+        // THEN
+        const expected = [
+          new HaystackApiService({ haystackApiHost: 'apiServer1' }),
+          new HaystackApiService({ haystackApiHost: 'apiServer2' })
+        ]
+        expect(state.apiServers).toEqual(expected)
       })
     })
   })
@@ -139,8 +161,8 @@ describe('store', () => {
         it('should commit news entities to the first api', async () => {
           const entity = 'site'
           const apiNumber = 0
-          await actions.fetchEntity({ commit }, { entity, apiNumber })
-          expect(commit).toHaveBeenNthCalledWith(1, 'SET_ENTITIES', { entities: entities.rows, apiNumber: 0 })
+          await actions.fetchEntity({ dispatch }, { entity, apiNumber })
+          expect(dispatch).toHaveBeenNthCalledWith(1, 'commitNewEntities', { entities: entities.rows, apiNumber: 0 })
         })
       })
     })
@@ -161,8 +183,8 @@ describe('store', () => {
           apiServers: ['api1', 'api2'],
           entities: [
             [
-              { id: 'r:id1 entity name', his: 'm:' },
-              { id: 'r:id2 entity name', his: 'm:' }
+              { id: { val: 'r:id1 entity name' }, his: { val: 'm:' } },
+              { id: { val: 'r:id2 entity name' }, his: { val: 'm:' } }
             ]
           ]
         }
@@ -182,8 +204,8 @@ describe('store', () => {
           apiServers: ['api1', 'api2', 'api3'],
           entities: [
             [
-              { id: 'r:id1 entity name', his: 'm:' },
-              { id: 'r:id2 entity name', his: 'm:' }
+              { id: { val: 'r:id1 entity name' }, his: { val: 'm:' } },
+              { id: { val: 'r:id2 entity name' }, his: { val: 'm:' } }
             ]
           ]
         }

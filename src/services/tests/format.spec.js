@@ -1,20 +1,6 @@
 import { formatService } from '..'
 
 describe('formatService', () => {
-  describe('#formatXAxis', () => {
-    it('should format xAxisValues', () => {
-      // GIVEN
-      const history = [
-        { ts: 't:2020-07-01T00:00:00+00:00 UTC', val: 'n:64.00000' },
-        { ts: 't:2020-08-01T00:00:00+00:00 UTC', val: 'n:4.00000' }
-      ]
-      // WHEN
-      const output = formatService.formatXAxis(history)
-      // THEN
-      const expected = ['07/2020', '08/2020']
-      expect(output).toEqual(expected)
-    })
-  })
   describe('#formatYAxis', () => {
     it('should format formatYAxis', () => {
       // GIVEN
@@ -52,7 +38,7 @@ describe('formatService', () => {
     describe('When entity is from source', () => {
       it('should return true', () => {
         // GIVEN
-        const entitiesFromAllSource = [[{ id: 'id1' }, { ts: 'id2' }]]
+        const entitiesFromAllSource = [[{ id: { val: 'id1' } }, { id: { val: 'an id' }, ts: 'id2' }]]
         const entityIdToFind = 'id1'
         // WHEN
         const output = formatService.isEntityFromSource(entitiesFromAllSource, entityIdToFind)
@@ -62,8 +48,8 @@ describe('formatService', () => {
       it('should return true', () => {
         // GIVEN
         const entitiesFromAllSource = [
-          [{ id: 'id1' }, { id: 'id2' }],
-          [{ id: 'id3' }, { id: 'id4' }]
+          [{ id: { val: 'id1' } }, { id: { val: 'id2' } }],
+          [{ id: { val: 'id3' } }, { id: { val: 'id4' } }]
         ]
         const entityIdToFind = 'id4'
         // WHEN
@@ -75,7 +61,7 @@ describe('formatService', () => {
     describe('When entity is not from source', () => {
       it('should return false', () => {
         // GIVEN
-        const entitiesFromAllSource = [[{ id: 'id"' }, { id: 'id3' }]]
+        const entitiesFromAllSource = [[{ id: { val: 'id"' } }, { id: { val: 'id3' } }]]
         const entityIdToFind = 'id1'
         // WHEN
         const output = formatService.isEntityFromSource(entitiesFromAllSource, entityIdToFind)
@@ -88,16 +74,44 @@ describe('formatService', () => {
   describe('groupAllEntitiesById', () => {
     it('should Group By Id All entities', () => {
       // GIVEN
-      const firstEntity = [{ id: 1, key1: 'value1', key2: 'value2', key3: 'value3' }]
-      const secondEntity = [{ id: 1, key1: 'value1', key2: 'value2Bis', key4: 'value4' }]
-      const thirdEntity = [{ id: 2, key1: 'value1bis', key5: 'value5' }]
+      const firstEntity = [
+        {
+          id: { val: '1', apiSource: 1 },
+          key1: { val: 'value1', apiSource: 1 },
+          key2: { val: 'value2', apiSource: 1 },
+          key3: { val: 'value3', apiSource: 1 }
+        }
+      ]
+      const secondEntity = [
+        {
+          id: { val: '1', apiSource: 2 },
+          key1: { val: 'value1', apiSource: 2 },
+          key2: { val: 'value2Bis', apiSource: 2 },
+          key4: { val: 'value4', apiSource: 2 }
+        }
+      ]
+      const thirdEntity = [
+        {
+          id: { val: '2', apiSource: 3 },
+          key1: { val: 'value1bis', apiSource: 3 },
+          key5: { val: 'value5', apiSource: 3 }
+        }
+      ]
       const entities = [firstEntity, secondEntity, thirdEntity]
       // WHEN
       const output = formatService.groupAllEntitiesById(entities)
       // THEN
       const expected = [
-        { id: 1, key1: 'value1', key2_1: 'value2', key2_2: 'value2Bis', key3: 'value3', key4: 'value4' },
-        { id: 2, key1: 'value1bis', key5: 'value5' }
+        {
+          id: { val: '1', apiSource: 1 },
+          key1_1: { val: 'value1', apiSource: 1 },
+          key1_3: { val: 'value1bis', apiSource: 3 },
+          key2_1: { val: 'value2', apiSource: 1 },
+          key2_2: { val: 'value2Bis', apiSource: 2 },
+          key3: { val: 'value3', apiSource: 1 },
+          key4: { val: 'value4', apiSource: 2 },
+          key5: { val: 'value5', apiSource: 3 }
+        }
       ]
       expect(output).toEqual(expected)
     })
@@ -106,33 +120,115 @@ describe('formatService', () => {
     describe('When entityLink is from source', () => {
       it('should return link from source, and an empty array', () => {
         const entitiesFromAllSource = [
-          [{ id: 'r:id1 name of first ref', oneRef: 'r:aRef name of second ref' }, { id: 'r:aRef name of second ref' }]
+          [
+            {
+              id: { val: 'r:id1 name of first ref', apiSource: 1 },
+              oneRef: { val: 'r:aRef name of second ref', apiSource: 1 }
+            },
+            { id: { val: 'r:aRef name of second ref', apiSource: 1 } }
+          ]
         ]
         const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
-        const nodeColor = []
+        const nodeColor = [
+          {
+            color: '#dc143c',
+            id: 'name of second ref',
+            marker: {
+              radius: 10
+            }
+          },
+          {
+            color: '#dc143c',
+            dis: 'name of first ref',
+            id: 'name of first ref',
+            marker: {
+              radius: 10
+            }
+          },
+          {
+            color: '#dc143c',
+            dis: 'name of second ref',
+            id: 'name of second ref',
+            marker: {
+              radius: 10
+            }
+          }
+        ]
         const linkBetweenEntities = [['name of first ref', 'name of second ref']]
-        const entityNameToRef = { 'name of second ref': 'aRef' }
+        const entityNameToRef = { aRef: 'name of second ref', id1: 'name of first ref' }
         expect(result).toEqual([linkBetweenEntities, nodeColor, entityNameToRef])
       })
       it('should return only link from source', () => {
         const entitiesFromAllSource = [
-          [{ id: 'r:id1 name of first ref', oneRef: 'r:aRef name of second ref' }],
-          [{ id: 'r:aRef name of second ref' }]
+          [
+            {
+              id: { val: 'r:id1 name of first ref', apiSource: 1 },
+              oneRef: { val: 'r:aRef name of second ref', apiSource: 1 }
+            }
+          ],
+          [{ id: { val: 'r:aRef name of second ref', apiSource: 2 } }]
         ]
         const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
-        const colorNodesOutsideFromSource = []
+        const nodeColor = [
+          {
+            color: '#dc143c',
+            id: 'name of second ref',
+            marker: {
+              radius: 10
+            }
+          },
+          {
+            color: '#dc143c',
+            dis: 'name of first ref',
+            id: 'name of first ref',
+            marker: {
+              radius: 10
+            }
+          },
+          {
+            color: '#0000ff',
+            dis: 'name of second ref',
+            id: 'name of second ref',
+            marker: {
+              radius: 10
+            }
+          }
+        ]
         const linksBetweenEntities = [['name of first ref', 'name of second ref']]
-        const entityNameToRef = { 'name of second ref': 'aRef' }
-        expect(result).toEqual([linksBetweenEntities, colorNodesOutsideFromSource, entityNameToRef])
+        const entityNameToRef = { aRef: 'name of second ref', id1: 'name of first ref' }
+        expect(result).toEqual([linksBetweenEntities, nodeColor, entityNameToRef])
       })
     })
     describe('When entityLink is not from source', () => {
       it('should return only link outside from source', () => {
-        const entitiesFromAllSource = [[{ id: 'r:id1 name of first ref', oneRef: 'r:aRef name of second ref' }]]
+        const entitiesFromAllSource = [
+          [
+            {
+              id: { val: 'r:id1 name of first ref', apiSource: 1 },
+              oneRef: { val: 'r:aRef name of second ref', apiSource: 1 }
+            }
+          ]
+        ]
         const result = formatService.getLinkBetweenEntities(entitiesFromAllSource)
-        const linkBetweenEntities = [['name of first ref', 'name of second ref']]
-        const colorsForNodeOutsideFromSource = [{ color: '#ff0000', id: 'name of second ref' }]
-        const entityNameToRef = { 'name of second ref': 'aRef' }
+        const linkBetweenEntities = [['name of first ref', 'aRef']]
+        const colorsForNodeOutsideFromSource = [
+          {
+            color: '#c1e1ec',
+            id: 'aRef',
+            marker: {
+              radius: 5
+            }
+          },
+          {
+            color: '#dc143c',
+            dis: 'name of first ref',
+            id: 'name of first ref',
+            marker: {
+              radius: 10
+            }
+          }
+        ]
+        const entityNameToRef = { id1: 'name of first ref' }
         expect(result).toEqual([linkBetweenEntities, colorsForNodeOutsideFromSource, entityNameToRef])
       })
     })
@@ -140,14 +236,14 @@ describe('formatService', () => {
   describe('#groupTwoEntitiesById', () => {
     describe('When entities have not similar entity', () => {
       it('should merge both entities', () => {
-        const entityFromFirstSource = [{ id: 'id1', key1: 10 }]
-        const entityFromSecondSource = [{ id: 'id2', key2: 12 }]
+        const entityFromFirstSource = [{ id: { val: 'id1' }, key1: { val: 10 } }]
+        const entityFromSecondSource = [{ id: { val: 'id2' }, key2: { val: 12 } }]
 
         const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
         const expected = [
-          { id: 'id1', key1: 10 },
-          { id: 'id2', key2: 12 }
+          { id: { val: 'id1' }, key1: { val: 10 } },
+          { id: { val: 'id2' }, key2: { val: 12 } }
         ]
         expect(output).toEqual(expected)
       })
@@ -155,46 +251,80 @@ describe('formatService', () => {
     describe('When both entities have a similar entity', () => {
       describe('When all key are different', () => {
         it('should return a merge of of this entity', () => {
-          const entityFromFirstSource = [{ id: 'id1', key1: 10 }]
-          const entityFromSecondSource = [{ id: 'id1', key2: 12 }]
+          const entityFromFirstSource = [{ id: { val: 'id1' }, key1: { val: 10 } }]
+          const entityFromSecondSource = [{ id: { val: 'id1' }, key2: { val: 12 } }]
 
           const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
-          const expected = [{ id: 'id1', key1: 10, key2: 12 }]
+          const expected = [{ id: { val: 'id1' }, key1: { val: 10 }, key2: { val: 12 } }]
           expect(output).toEqual(expected)
         })
       })
       describe('When there is one key with same value', () => {
         it('should merge with only one sample of the key value similar', () => {
-          const entityFromFirstSource = [{ id: 'id1', key1: 10 }]
-          const entityFromSecondSource = [{ id: 'id1', key2: 12, key1: 10 }]
+          const entityFromFirstSource = [{ id: { val: 'id1' }, key1: { val: 10 } }]
+          const entityFromSecondSource = [{ id: { val: 'id1' }, key2: { val: 12 }, key1: { val: 10 } }]
 
           const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
-          const expected = [{ id: 'id1', key1: 10, key2: 12 }]
+          const expected = [{ id: { val: 'id1' }, key1: { val: 10 }, key2: { val: 12 } }]
           expect(output).toEqual(expected)
         })
       })
       describe('when there one key with two differents values', () => {
         it('should merge with two sample of the key annotated with differents values', () => {
-          const entityFromFirstSource = [{ id: 'id1', key1: 10 }]
-          const entityFromSecondSource = [{ id: 'id1', key2: 12, key1: 12 }]
+          const entityFromFirstSource = [{ id: { val: 'id1', apiSource: 1 }, key1: { val: 10, apiSource: 1 } }]
+          const entityFromSecondSource = [
+            { id: { val: 'id1', apiSource: 2 }, key2: { val: 12, apiSource: 2 }, key1: { val: 12, apiSource: 2 } }
+          ]
 
           const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
-          const expected = [{ id: 'id1', key1_1: 10, key1_2: 12, key2: 12 }]
+          const expected = [
+            {
+              id: { val: 'id1', apiSource: 1 },
+              key1_1: { val: 10, apiSource: 1 },
+              key1_2: { val: 12, apiSource: 2 },
+              key2: { val: 12, apiSource: 2 }
+            }
+          ]
           expect(output).toEqual(expected)
         })
       })
       describe('when there is complex situation', () => {
         it('should merge correctly both array', () => {
-          const entityFromFirstSource = [{ id: 'id1', key1: 10, key2: 1, key4: 'value4', key5: 'value5' }]
-          const entityFromSecondSource = [{ id: 'id1', key1: 12, key2: 12, key3: 'value3', key4: 'value4' }]
+          const entityFromFirstSource = [
+            {
+              id: { val: 'id1', apiSource: 1 },
+              key1: { val: 10, apiSource: 1 },
+              key2: { val: 1, apiSource: 1 },
+              key4: { val: 'value4', apiSource: 1 },
+              key5: { val: 'value5', apiSource: 1 }
+            }
+          ]
+          const entityFromSecondSource = [
+            {
+              id: { val: 'id1', apiSource: 2 },
+              key1: { val: 12, apiSource: 2 },
+              key2: { val: 12, apiSource: 2 },
+              key3: { val: 'value3', apiSource: 2 },
+              key4: { val: 'value4', apiSource: 2 }
+            }
+          ]
 
           const output = formatService.groupTwoEntitiesById(entityFromFirstSource, entityFromSecondSource)
 
           const expected = [
-            { id: 'id1', key1_1: 10, key1_2: 12, key2_1: 1, key2_2: 12, key3: 'value3', key4: 'value4', key5: 'value5' }
+            {
+              id: { val: 'id1', apiSource: 1 },
+              key1_1: { val: 10, apiSource: 1 },
+              key1_2: { val: 12, apiSource: 2 },
+              key2_1: { val: 1, apiSource: 1 },
+              key2_2: { val: 12, apiSource: 2 },
+              key3: { val: 'value3', apiSource: 2 },
+              key4: { val: 'value4', apiSource: 1 },
+              key5: { val: 'value5', apiSource: 1 }
+            }
           ]
           expect(output).toEqual(expected)
         })
@@ -217,8 +347,8 @@ describe('formatService', () => {
   describe('#findSimilarKeysWithDifferentsValues', () => {
     it('should rename correctly a key object', () => {
       // GIVEN
-      const object1 = { key1: 'value1', key2: 'value2', key3: 'value5' }
-      const object2 = { key1: 'value2', key2: 'value2', key4: 'value4' }
+      const object1 = { key1: { val: 'value1' }, key2: { val: 'value2' }, key3: { val: 'value5' } }
+      const object2 = { key1: { val: 'value2' }, key2: { val: 'value2' }, key4: { val: 'value4' } }
       // WHEN
       const output = formatService.findSimilarObjectsKeyWithDifferentsValues(object1, object2)
       // THEN

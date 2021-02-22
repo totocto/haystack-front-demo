@@ -11,11 +11,7 @@ const dataUtils = {
   },
   sortChartDataByDate(dataChart) {
     const dataChartSorted = dataChart.slice()
-    return dataChartSorted.map(dataApi =>
-      dataApi.sort(function(firstData, secondData) {
-        return secondData[0] - firstData[0]
-      })
-    )
+    return dataChartSorted.map(dataApi => dataApi.sort((firstData, secondData) => secondData[0] - firstData[0]))
   }
 }
 

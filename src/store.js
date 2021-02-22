@@ -46,7 +46,7 @@ export const mutations = {
     apiServers.map(apiServer => {
       newApiServers.push(new HaystackApiService({ haystackApiHost: apiServer }))
     })
-    state.apiServers = apiServers
+    state.apiServers = newApiServers
   },
   SET_HAYSTACK_API(state, { haystackApiHost }) {
     const newApiServers = state.apiServers.slice()
@@ -93,11 +93,7 @@ export const actions = {
     // await context.commit('SET_ENTITIES', { entities: entities.rows, apiNumber })
   },
   async fetchHistories(context, { idsEntityWithHis, apiNumber }) {
-    const histories = await Promise.all(
-      idsEntityWithHis.map(async id => {
-        return state.apiServers[apiNumber].getHistory(id)
-      })
-    )
+    const histories = await Promise.all(idsEntityWithHis.map(async id => state.apiServers[apiNumber].getHistory(id)))
     const idHistories = {}
     // eslint-disable-next-line no-return-assign
     idsEntityWithHis.forEach((key, index) => (idHistories[key] = histories[index]))
@@ -113,14 +109,12 @@ export const actions = {
     )
   },
   async fetchAllHistories(context) {
-    const { apiServers } = context.getters
-    const entities = state.entities.slice()
-    const groupEntities = entities.length === 1 ? entities[0] : formatService.groupAllEntitiesById(entities)
+    const { apiServers, entities } = context.getters
+    const entitiesCopy = entities.slice()
+    const groupEntities = entitiesCopy.length === 1 ? entitiesCopy[0] : formatService.groupAllEntitiesById(entitiesCopy)
     const idsEntityWithHis = groupEntities
       .filter(entity => entity.his)
-      .map(entity => {
-        return formatService.formatIdEntity(entity.id.val)
-      })
+      .map(entity => formatService.formatIdEntity(entity.id.val))
     await Promise.all(
       // eslint-disable-next-line
       await apiServers.map(async (apiServer, index) => {

@@ -14,6 +14,7 @@ const globalStubs = ['router-view', 'v-text-field']
 describe('VSummaryContent.vue', () => {
   beforeEach(() => {
     mutations = {
+      SET_API_SERVERS: sinon.stub(),
       SET_FILTER_API: sinon.stub()
     }
     actions = {
@@ -26,14 +27,16 @@ describe('VSummaryContent.vue', () => {
     wrapper = shallowMount(VSummaryContent, {
       stubs: globalStubs,
       mocks: {
+        $route: {
+          query: {}
+        },
         $store: new Vuex.Store({
           getters: {
+            filterApi: () => '',
             isDataLoaded: () => true,
             apiServers: () => ['an api'],
-            histories: () => {
-              return [{ 'p:thisisademo1': ['history1'] }, []]
-            },
-            entities: () => [[{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }]]
+            histories: () => [{ 'p:thisisademo1': ['history1'] }, []],
+            entities: () => [[{ id: { val: 'r:p:thisisademo1 demoEngie1' }, his: { val: 'm:' } }, { id: { val: 'r:p:thisisademo2 demoEngie2' }}]]
           },
           actions,
           mutations
@@ -47,9 +50,46 @@ describe('VSummaryContent.vue', () => {
   it('should mount the component', () => {
     expect(wrapper).toBeDefined()
   })
-  it('should dispatch reloadAllData with right args', () => {
-    expect(actions.reloadAllData.calledOnce).toBeTrue()
-    expect(actions.reloadAllData.args[0][1]).toEqual({ entity: '' })
+  describe('When there is no query parameter', () => {
+    it('should dispatch reloadAllData with right args', () => {
+      expect(actions.reloadAllData.calledOnce).toBeTrue()
+      expect(actions.reloadAllData.args[0][1]).toEqual({ entity: '' })
+    })
+  })
+  describe('When there is query parameter', () => {
+    beforeEach(() => {
+      wrapper = shallowMount(VSummaryContent, {
+        stubs: globalStubs,
+        mocks: {
+          $route: {
+            query: { apiServers: '["aserver"]', filterApi: 'afilter'}
+          },
+          $store: new Vuex.Store({
+            getters: {
+              filterApi: () => '',
+              isDataLoaded: () => true,
+              apiServers: () => ['an api'],
+              histories: () => [{ 'p:thisisademo1': ['history1'] }, []],
+              entities: () => [[{ id: { val: 'r:p:thisisademo1 demoEngie1' }, his: { val: 'm:' } }, { id: { val: 'r:p:thisisademo2 demoEngie2' }}]]
+            },
+            actions,
+            mutations
+        })
+      }
+    })
+  })
+    it('should dispatch reloadAllData with right args', () => {
+      expect(actions.reloadAllData.called).toBeTrue()
+      expect(actions.reloadAllData.args[0][1]).toEqual({ entity: '' })
+    })
+    it('it should commit default api Servers', () => {
+      expect(mutations.SET_API_SERVERS.calledOnce).toBeTrue()
+      expect(mutations.SET_API_SERVERS.args[0][1]).toEqual({ apiServers: ['aserver'] })
+    })
+    it('should commit new api filter', () => {
+      expect(mutations.SET_FILTER_API.calledOnce).toBeTrue()
+      expect(mutations.SET_FILTER_API.args[0][1]).toEqual({ filterApi: 'afilter' })
+    })
   })
   it('should create CEntityRow component', () => {
     expect(wrapper.findComponent(CEntityRow).exists()).toBeTrue()
@@ -59,12 +99,13 @@ describe('VSummaryContent.vue', () => {
       wrapper = shallowMount(VSummaryContent, {
         stubs: globalStubs,
         mocks: {
+          $route: {
+            query: {}
+          },
           $store: new Vuex.Store({
             getters: {
               apiServers: () => ['an api'],
-              histories: () => {
-                return [{ 'p:thisisademo1': ['history1'] }, []]
-              },
+              histories: () => [{ 'p:thisisademo1': ['history1'] }, []],
               entities: () => [
                 [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }, { id: 'r:p:thisisademo2 demoEngie2' }]
               ]
@@ -92,15 +133,16 @@ describe('VSummaryContent.vue', () => {
         wrapper = shallowMount(VSummaryContent, {
           stubs: globalStubs,
           mocks: {
+            $route: {
+              query: {}
+            },
             $store: new Vuex.Store({
               getters: {
                 apiServers: () => ['an api', null],
-                histories: () => {
-                  return [
-                    { 'p:thisisademo1': ['history1'], 'p:thisisademo2': ['history2'] },
-                    { 'p:thisisademo1': ['history1_bis'] }
-                  ]
-                },
+                histories: () => [
+                  { 'p:thisisademo1': ['history1'], 'p:thisisademo2': ['history2'] },
+                  { 'p:thisisademo1': ['history1_bis'] }
+                ],
                 entities: () => [
                   [{ id: 'r:p:thisisademo1 demoEngie1', his: 'm:' }],
                   [{ id: 'r:p:thisisademo2 demoEngie1', his: 'm:' }]
@@ -127,21 +169,22 @@ describe('VSummaryContent.vue', () => {
         wrapper = shallowMount(VSummaryContent, {
           stubs: globalStubs,
           mocks: {
+            $route: {
+              query: {}
+            },
             $store: new Vuex.Store({
               getters: {
                 apiServers: () => ['an api', null],
-                histories: () => {
-                  return [
-                    { 'p:thisisademo1': ['history1'], 'p:thisisademo2': ['history2'] },
-                    { 'p:thisisademo1': ['history1_bis'] }
-                  ]
-                },
+                histories: () => [
+                  { 'p:thisisademo1': ['history1'], 'p:thisisademo2': ['history2'] },
+                  { 'p:thisisademo1': ['history1_bis'] }
+                ],
                 entities: () => [
                   [
-                    { id: 'r:p:thisisademo1 demoEngie1' },
-                    { id: 'r:p:thisisademo1 demoEngie2', siteRef: 'r:idStuff demoEngie1' }
+                    { id: { val: 'r:p:thisisademo1 demoEngie1' } },
+                    { id: { val: 'r:p:thisisademo1 demoEngie2' },  siteRef: { val: 'r:idStuff demoEngie1' } }
                   ],
-                  [{ id: 'r:p:thisisademo2 demoEngie3', siteRef: 'r:idPoint a point' }]
+                  [{ id: { val: 'r:p:thisisademo2 demoEngie3' }, siteRef: { val: 'r:idPoint a point' } }]
                 ]
               },
               mutations,

@@ -8,7 +8,7 @@ describe('dataUtils', () => {
       // WHEN
       const output = dataUtils.formatDate(date)
       // THEN
-      const expected = { date: '07/2020' }
+      const expected = 1593561600000
       expect(output).toEqual(expected)
     })
   })

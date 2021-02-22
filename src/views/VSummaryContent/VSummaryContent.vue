@@ -45,9 +45,7 @@ export default {
     idsWithHis() {
       return this.entitiesGroupedById
         .filter(entity => entity.his)
-        .map(entity => {
-          return formatService.formatIdEntity(entity.id.val)
-        })
+        .map(entity => formatService.formatIdEntity(entity.id.val))
     },
     histories() {
       return this.$store.getters.histories
@@ -111,15 +109,16 @@ export default {
     }
   },
   async beforeMount() {
-    /*
     if (Object.keys(this.$route.query).length > 0) {
-      if (this.$route.query.apiServers)
-        await this.$store.commit('SET_API_SERVERS', { apiServers: this.$route.query.apiServers })
-      if (this.$route.query.apiServers)
+      if (this.$route.query.apiServers) {
+        const defaultApiServers = JSON.parse(this.$route.query.apiServers)
+        await this.$store.commit('SET_API_SERVERS', { apiServers: defaultApiServers })
+      }
+      if (this.$route.query.filterApi) {
         await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.filterApi })
+      }
     }
-    */
-    await this.$store.dispatch('reloadAllData', { entity: '' })
+    await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
   }
 }
 </script>

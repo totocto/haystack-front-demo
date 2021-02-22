@@ -38,11 +38,6 @@ const formatService = {
     })
     return mapEntityIdToEntityName
   },
-  formatXAxis: histories => {
-    return histories.map(history => {
-      return dataUtils.formatDate(history.ts).date
-    })
-  },
   formatCharts(historic) {
     return historic.map(point => {
       return [dataUtils.formatDate(point.ts),  dataUtils.formatVal(point.val)]
