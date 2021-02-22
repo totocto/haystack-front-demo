@@ -82,7 +82,6 @@ export default {
     async changeApiServers(haystackApiHost) {
       this.$store.commit('DELETE_HAYSTACK_API', { haystackApiHost })
       await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-      console.log(this.getApiServers)
       await this.$router.replace({ query: null })
       this.$router.push({ query: { filterApi: this.filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
       this.comboboxInput = ''
@@ -101,7 +100,7 @@ export default {
       if (newFilter !== this.$store.getters.filterApi) {
         this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
         await this.$router.replace({ query: null })
-        this.$router.push({ query: { filterApi: this.filterApi, apiServers: `["${this.getApiServers.join('"')}"]` } })
+        this.$router.push({ query: { filterApi: newFilter, apiServers: `["${this.getApiServers.join('"')}"]` } })
         await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
     },
