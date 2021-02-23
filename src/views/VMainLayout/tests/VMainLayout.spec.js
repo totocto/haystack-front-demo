@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import sinon from 'sinon'
-import VMainLayout from '../VMainLayout.vue'
+import VMainLayout from '../VMainLayout.js'
 
 Vue.use(Vuex)
 let wrapper
