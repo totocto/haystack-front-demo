@@ -44,7 +44,7 @@
         class="summary-content__text-field"
         label="Filter"
         outlined
-        v-model="filterApi"
+        :value="filterApi"
         dense
         background-color="white"
         @change="updateFilter($event)"
@@ -82,7 +82,7 @@ export default {
     async changeApiServers(haystackApiHost) {
       this.$store.commit('DELETE_HAYSTACK_API', { haystackApiHost })
       await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-      await this.$router.replace({ query: null })
+      await this.$router.replace({ query: null }).catch(() => {})
       this.$router.push({ query: { filterApi: this.filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
       this.comboboxInput = ''
     },
@@ -91,7 +91,7 @@ export default {
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-        await this.$router.replace({ query: null })
+        await this.$router.replace({ path: '/', query: null }).catch(() => {})
         this.$router.push({ query: { filterApi: this.filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
         this.comboboxInput = ''
       }
@@ -99,8 +99,8 @@ export default {
     async updateFilter(newFilter) {
       if (newFilter !== this.$store.getters.filterApi) {
         this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
-        await this.$router.replace({ query: null })
-        this.$router.push({ query: { filterApi: newFilter, apiServers: `["${this.getApiServers.join('"')}"]` } })
+        await this.$router.replace({ query: null }).catch(() => {})
+        this.$router.push({ query: { filterApi: newFilter, apiServers: `["${this.getApiServers.join('","')}"]` } })
         await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
     },

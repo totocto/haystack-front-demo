@@ -12,7 +12,7 @@ let router
 const globalStubs = ['router-view', 'v-app-bar', 'v-img', 'v-spacer', 'v-combobox', 'v-icon', 'v-text-field']
 describe('VMainLayout.vue', () => {
   beforeEach(() => {
-    router = { push: sinon.stub(), replace: sinon.stub() }
+    router = { push: sinon.stub(), replace: sinon.stub().returns({ catch: sinon.stub() }) }
     mutations = {
       DELETE_HAYSTACK_API: sinon.stub(),
       SET_FILTER_API: sinon.stub()

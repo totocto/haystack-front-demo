@@ -36,7 +36,12 @@ describe('VSummaryContent.vue', () => {
             isDataLoaded: () => true,
             apiServers: () => ['an api'],
             histories: () => [{ 'p:thisisademo1': ['history1'] }, []],
-            entities: () => [[{ id: { val: 'r:p:thisisademo1 demoEngie1' }, his: { val: 'm:' } }, { id: { val: 'r:p:thisisademo2 demoEngie2' }}]]
+            entities: () => [
+              [
+                { id: { val: 'r:p:thisisademo1 demoEngie1' }, his: { val: 'm:' } },
+                { id: { val: 'r:p:thisisademo2 demoEngie2' } }
+              ]
+            ]
           },
           actions,
           mutations
@@ -62,7 +67,7 @@ describe('VSummaryContent.vue', () => {
         stubs: globalStubs,
         mocks: {
           $route: {
-            query: { apiServers: '["aserver"]', filterApi: 'afilter'}
+            query: { apiServers: '["aserver"]', filterApi: 'afilter' }
           },
           $store: new Vuex.Store({
             getters: {
@@ -70,14 +75,19 @@ describe('VSummaryContent.vue', () => {
               isDataLoaded: () => true,
               apiServers: () => ['an api'],
               histories: () => [{ 'p:thisisademo1': ['history1'] }, []],
-              entities: () => [[{ id: { val: 'r:p:thisisademo1 demoEngie1' }, his: { val: 'm:' } }, { id: { val: 'r:p:thisisademo2 demoEngie2' }}]]
+              entities: () => [
+                [
+                  { id: { val: 'r:p:thisisademo1 demoEngie1' }, his: { val: 'm:' } },
+                  { id: { val: 'r:p:thisisademo2 demoEngie2' } }
+                ]
+              ]
             },
             actions,
             mutations
-        })
-      }
+          })
+        }
+      })
     })
-  })
     it('should dispatch reloadAllData with right args', () => {
       expect(actions.reloadAllData.called).toBeTrue()
       expect(actions.reloadAllData.args[0][1]).toEqual({ entity: '' })
@@ -182,9 +192,9 @@ describe('VSummaryContent.vue', () => {
                 entities: () => [
                   [
                     { id: { val: 'r:p:thisisademo1 demoEngie1' } },
-                    { id: { val: 'r:p:thisisademo1 demoEngie2' },  siteRef: { val: 'r:idStuff demoEngie1' } }
+                    { id: { val: 'r:p:thisisademo1 demoEngie2' }, siteRef: { val: 'r:idStuff demoEngie1' } }
                   ],
-                  [{ id: { val: 'r:p:thisisademo2 demoEngie3' }, siteRef: { val: 'r:idPoint a point' } }]
+                  [{ id: { val: 'r:p:thisisademo2 demoEngie3' }, siteRef: { val: 'r:idPoint a point' } }]
                 ]
               },
               mutations,
