@@ -15,6 +15,15 @@
         />
         <h2 class="main-layout__title">Haystack</h2>
       </div>
+      <v-text-field
+        class="summary-content__text-field"
+        label="Filter"
+        outlined
+        :value="filterApi"
+        dense
+        background-color="white"
+        @change="updateFilter($event)"
+      />
       <v-combobox
         class="main-layout__combobox"
         v-model="comboboxInput"
@@ -40,15 +49,6 @@
           </div>
         </template>
       </v-combobox>
-      <v-text-field
-        class="summary-content__text-field"
-        label="Filter"
-        outlined
-        :value="filterApi"
-        dense
-        background-color="white"
-        @change="updateFilter($event)"
-      />
       <v-spacer></v-spacer>
     </v-app-bar>
     <main>
@@ -82,8 +82,8 @@ export default {
     async changeApiServers(haystackApiHost) {
       this.$store.commit('DELETE_HAYSTACK_API', { haystackApiHost })
       await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-      await this.$router.replace({ query: null }).catch(() => {})
-      this.$router.push({ query: { filterApi: this.filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
+      const { filterApi } = this.$route.query
+      this.$router.push({ query: { filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
       this.comboboxInput = ''
     },
     async updateAPI() {
@@ -91,16 +91,17 @@ export default {
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-        await this.$router.replace({ path: '/', query: null }).catch(() => {})
-        this.$router.push({ query: { filterApi: this.filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
+        const { filterApi } = this.$route.query
+        const { hash } = this.$route
+        this.$router.replace({ hash, query: { filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
         this.comboboxInput = ''
       }
     },
     async updateFilter(newFilter) {
       if (newFilter !== this.$store.getters.filterApi) {
         this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
-        await this.$router.replace({ query: null }).catch(() => {})
-        this.$router.push({ query: { filterApi: newFilter, apiServers: `["${this.getApiServers.join('","')}"]` } })
+        const { apiServers } = this.$route.query
+        this.$router.push({ query: { filterApi: newFilter, apiServers } })
         await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
     },
@@ -152,6 +153,7 @@ export default {
 }
 .summary-content__text-field {
   margin-top: 23px !important;
+  padding-left: 10px !important;
   width: 1%;
   .v-input--is-focused {
     background: white;
@@ -159,6 +161,7 @@ export default {
 }
 .main-layout__combobox-api-text {
   padding-left: 15px;
+  margin-right: 20px;
 }
 .circle {
   position: absolute;
