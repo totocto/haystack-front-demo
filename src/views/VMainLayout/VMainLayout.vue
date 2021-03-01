@@ -81,27 +81,33 @@ export default {
     },
     async changeApiServers(haystackApiHost) {
       this.$store.commit('DELETE_HAYSTACK_API', { haystackApiHost })
-      await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-      const { filterApi } = this.$route.query
-      this.$router.push({ query: { filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
+      if (this.getApiServers.length > 0) {
+        await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+      }
+      const { q } = this.$route.query
+      if (this.getApiServers.length > 0) this.$router.push({ query: { q, a: `["${this.getApiServers.join('","')}"]` } })
+      else this.$router.push({ query: { q } })
       this.comboboxInput = ''
     },
     async updateAPI() {
       const haystackApiHost = this.comboboxInput
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
-        this.$store.dispatch('createApiServer', { haystackApiHost })
+        const apiServersBeforeAdd = this.getApiServers.slice()
+        await this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-        const { filterApi } = this.$route.query
-        const { hash } = this.$route
-        this.$router.replace({ hash, query: { filterApi, apiServers: `["${this.getApiServers.join('","')}"]` } })
+        if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
+          const { q } = this.$route.query
+          const { hash } = this.$route
+          this.$router.push({ hash, query: { q, a: `["${this.getApiServers.join('","')}"]` } })
+        }
         this.comboboxInput = ''
       }
     },
     async updateFilter(newFilter) {
       if (newFilter !== this.$store.getters.filterApi) {
         this.$store.commit('SET_FILTER_API', { filterApi: newFilter })
-        const { apiServers } = this.$route.query
-        this.$router.push({ query: { filterApi: newFilter, apiServers } })
+        const { a } = this.$route.query
+        this.$router.push({ query: { q: newFilter, a } })
         await this.$store.dispatch('reloadAllData', { entity: newFilter })
       }
     },

@@ -30,6 +30,7 @@ describe('VMainLayout.vue', () => {
       },
       mocks: {
         $router: router,
+        $route: { query: { q: 'search1', a: '["host1"]' } },
         $store: new Vuex.Store({
           getters: {
             filterApi: () => 'a filter',
@@ -75,10 +76,16 @@ describe('VMainLayout.vue', () => {
         expect(actions.reloadAllData.calledOnce).toBeTrue()
         expect(actions.reloadAllData.args[0][1]).toEqual({ entity: 'a filter' })
       })
+      it('should push inside router right parameters', async () => {
+        const haystackApiHost = 'host1'
+        await wrapper.vm.changeApiServers(haystackApiHost)
+        expect(router.push.calledOnce).toBeTrue()
+        expect(router.push.args[0]).toEqual([{ query: { a: '["host1"]', q: 'search1' } }])
+      })
     })
     describe('#updateAPI', () => {
       describe('When api already exists', () => {
-        it('should call commit', async () => {
+        it('should not call commit', async () => {
           wrapper.setData({
             comboboxInput: 'host1'
           })
@@ -99,6 +106,15 @@ describe('VMainLayout.vue', () => {
           expect(actions.createApiServer.args[0][1]).toEqual({ haystackApiHost })
           expect(actions.reloadAllData.args[0][1]).toEqual({ entity: 'a filter' })
         })
+        /* it.only('should push right parameters to router', async () => {
+          const haystackApiHost = 'host2'
+          wrapper.setData({
+            comboboxInput: haystackApiHost
+          })
+          await wrapper.vm.updateAPI()
+          expect(router.push.calledOnce).toBeTrue()
+          expect(router.push.args[0]).toEqual([{ query: { a: '["host1"]', q: 'search1' } }])
+        }) */
       })
     })
     describe('#updateFilter', () => {
@@ -109,7 +125,7 @@ describe('VMainLayout.vue', () => {
         expect(mutations.SET_FILTER_API.calledOnce).toBeTrue()
         expect(mutations.SET_FILTER_API.args[0][1]).toEqual({ filterApi: newRequest })
         expect(router.push.calledOnce)
-        expect(router.push.args[0]).toEqual([{ query: { apiServers: '["host1"]', filterApi: 'a request' } }])
+        expect(router.push.args[0]).toEqual([{ query: { a: '["host1"]', q: 'a request' } }])
       })
     })
   })

@@ -1,5 +1,5 @@
 <template>
-  <div class="summary-content">
+  <div v-if="isAnyData" class="summary-content">
     <div class="summary-content__graph">
       <c-graph
         v-if="isDataLoaded"
@@ -12,15 +12,20 @@
     <div v-if="isDataLoaded">
       <c-entity-row
         v-for="row in entitiesGroupedById"
-        :ref="getEntityName(row)"
+        :ref="getEntityId(row)"
+        :id="getEntityId(row)"
         :key="row.id.val"
-        :id="row.id.val"
+        @onRefClick="onRefClick"
+        :idEntity="row.id.val"
         :dataEntity="row"
         :his="getHistories(row.id.val)"
         :isDataLoaded="isDataLoaded"
         class="summary-content__entity-row"
       />
     </div>
+  </div>
+  <div v-else class="summary-content">
+    NO DATA
   </div>
 </template>
 
@@ -33,6 +38,9 @@ export default {
   name: 'VSummaryContent',
   components: { CEntityRow, CGraph },
   computed: {
+    isAnyData() {
+      return !(this.entities.length === 0 || (this.entities.length === 1 && this.entities[0].length === 0))
+    },
     filterApi() {
       return this.$store.getters.filterApi
     },
@@ -50,6 +58,9 @@ export default {
     histories() {
       return this.$store.getters.histories
     },
+    apiServers() {
+      return this.$store.getters.apiServers
+    },
     getDefaultApiHost() {
       return this.$store.getters.apiServers[0].haystackApiHost
     },
@@ -61,14 +72,26 @@ export default {
     }
   },
   methods: {
+    async reloadPageFromQueryParameters() {
+      if (Object.keys(this.$route.query).length > 0) {
+        if (this.$route.query.a) {
+          const defaultApiServers = JSON.parse(this.$route.query.a)
+          await this.$store.dispatch('setHaystackApi', { apiServers: defaultApiServers })
+        }
+        if (this.$route.query.q) {
+          await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.q })
+        } else this.$store.commit('SET_FILTER_API', { filterApi: '' })
+      }
+      await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
+    },
     handleScroll() {
       // eslint-disable-next-line
       this.entitiesGroupedById.find(entity => {
-        const entityName = this.getEntityName(entity)
-        const el = this.$refs[entityName][0] ? this.$refs[entityName][0].$el : null
+        const entityId = this.getEntityId(entity)
+        const el = this.$refs[entityId][0] ? this.$refs[entityId][0].$el : null
         if (this.elementInViewport(el)) {
           const { query } = this.$route
-          this.$router.replace({ hash: entityName, query }).catch(() => {})
+          this.$router.replace({ hash: entityId, query }).catch(() => {})
         }
       })
     },
@@ -90,6 +113,10 @@ export default {
           entityColor.id === pointName && ['#dc143c', '#0000ff', '#00a86b', '#cc5500'].includes(entityColor.color)
       )
     },
+    async onRefClick(refId) {
+      this.$refs[refId][0].$el.scrollIntoView(true)
+      window.scrollBy(0, -200)
+    },
     async onGraphClick(pointName) {
       const linkBetweenEntities = this.getRelationGraphEntity(this.entities)
       const colorEntities = linkBetweenEntities[1]
@@ -101,12 +128,16 @@ export default {
         })
         this.$store.commit('SET_FILTER_API', { filterApi: newApiFilter })
       } else {
-        this.$refs[pointName][0].$el.scrollIntoView()
+        const entityId = Object.keys(entityNameToEntityId).find(key => entityNameToEntityId[key] === pointName)
+        this.$refs[entityId][0].$el.scrollIntoView(true)
         window.scrollBy(0, -200)
       }
     },
     getEntityName(entity) {
       return formatService.formatEntityName(entity)
+    },
+    getEntityId(entity) {
+      return entity.id.val.substring(2).split(' ')[0]
     },
     groupByIdEntities(entities) {
       return formatService.groupAllEntitiesById(entities)
@@ -131,25 +162,35 @@ export default {
       return formatService.getLinkBetweenEntities(entities)
     }
   },
-  async beforeMount() {
-    if (Object.keys(this.$route.query).length > 0) {
-      if (this.$route.query.apiServers) {
-        const defaultApiServers = JSON.parse(this.$route.query.apiServers)
-        await this.$store.commit('SET_API_SERVERS', { apiServers: defaultApiServers })
-      }
-      if (this.$route.query.filterApi) {
-        await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.filterApi })
-      }
+  watch: {
+    // eslint-disable-next-line
+    async $route(to, from) {
+      if (JSON.stringify(to.query) !== JSON.stringify(from.query)) await this.reloadPageFromQueryParameters()
     }
-    await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
+  },
+  async beforeMount() {
+    if (this.apiServers.length === 0)
+      await this.$store.dispatch('createApiServer', {
+        haystackApiHost: `${window.location.origin}${window.location.pathname}`
+      })
+    await this.reloadPageFromQueryParameters()
   },
   updated() {
-    const entityNames = this.entitiesGroupedById.map(entity => this.getEntityName(entity))
-    if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
-      this.$refs[decodeURI(this.$route.hash).substring(1)][0].$el.scrollIntoView()
-      window.scrollBy(0, -200)
+    if (this.isAnyData) {
+      if (this.entitiesGroupedById) {
+        const entityNames = this.entitiesGroupedById.map(entity => this.getEntityId(entity))
+        if (entityNames.indexOf(decodeURI(this.$route.hash).substring(1)) >= 0) {
+          if (this.$refs[decodeURI(this.$route.hash).substring(1)]) {
+            const elementRef = this.$refs[decodeURI(this.$route.hash).substring(1)][0]
+            if (elementRef) {
+              elementRef.$el.scrollIntoView()
+              window.scrollBy(0, -200)
+            }
+          }
+        }
+      }
+      window.addEventListener('scroll', this.handleScroll, { passive: true })
     }
-    window.addEventListener('scroll', this.handleScroll, { passive: true })
   }
 }
 </script>

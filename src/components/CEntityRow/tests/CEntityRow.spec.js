@@ -1,12 +1,15 @@
 import { shallowMount } from '@vue/test-utils'
 import Vuex from 'vuex'
 import Vue from 'vue'
+import sinon from 'sinon'
 import CEntityRow from '../CEntityRow.vue'
 
 Vue.use(Vuex)
 let wrapper
+let emit
 describe('CEntityRow.vue', () => {
   beforeEach(() => {
+    emit = sinon.stub()
     wrapper = shallowMount(CEntityRow, {
       stubs: ['v-data-table'],
       propsData: {
@@ -22,6 +25,14 @@ describe('CEntityRow.vue', () => {
         },
         isFromExternalSource: false,
         isDataLoaded: true
+      },
+      mocks: {
+        $store: new Vuex.Store({
+          getters: {
+            entities: () => [[{ id: { val: 'id1' } }]]
+          }
+        }),
+        $emit: emit
       }
     })
   })
@@ -117,6 +128,38 @@ describe('CEntityRow.vue', () => {
       })
     })
     // REFACTO TO DO
+    describe('#refClicked', () => {
+      it('should emit an event', () => {
+        wrapper.vm.refClicked('anid')
+        expect(emit.calledOnce).toBeTrue()
+        expect(emit.args[0]).toEqual(['onRefClick', 'anid'])
+      })
+    })
+    describe('#isRefClickable', () => {
+      describe('When item is an id', () => {
+        it('should return false', () => {
+          const item = { tag: 'id', value: 'Something' }
+          const result = wrapper.vm.isRefClickable(item)
+          expect(result).toBeFalse()
+        })
+      })
+      describe('When item is not an id', () => {
+        describe('when item ref does not exists in entities', () => {
+          it('should return false', () => {
+            const item = { tag: 'notId', value: 'not valid id' }
+            const result = wrapper.vm.isRefClickable(item)
+            expect(result).toBeFalse()
+          })
+        })
+        describe('when item ref  exists in entities', () => {
+          it('should return true', () => {
+            const item = { tag: 'notId', value: 'id1' }
+            const result = wrapper.vm.isRefClickable(item)
+            expect(result).toBeTrue()
+          })
+        })
+      })
+    })
     describe('#getRefName', () => {
       describe('when item is of type id', () => {
         describe('When entity has a description', () => {

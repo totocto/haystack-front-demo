@@ -22,7 +22,8 @@ describe('VSummaryContent.vue', () => {
       fetchEntity: sinon.stub(),
       fetchHistories: sinon.stub(),
       createApiServer: sinon.stub(),
-      activateMultiApi: sinon.stub()
+      activateMultiApi: sinon.stub(),
+      setHaystackApi: sinon.stub()
     }
     wrapper = shallowMount(VSummaryContent, {
       stubs: globalStubs,
@@ -67,13 +68,13 @@ describe('VSummaryContent.vue', () => {
         stubs: globalStubs,
         mocks: {
           $route: {
-            query: { apiServers: '["aserver"]', filterApi: 'afilter' }
+            query: { a: '["aserver"]', q: 'afilter' }
           },
           $store: new Vuex.Store({
             getters: {
               filterApi: () => '',
               isDataLoaded: () => true,
-              apiServers: () => ['an api'],
+              apiServers: () => [], // ['an api'],
               histories: () => [{ 'p:thisisademo1': ['history1'] }, []],
               entities: () => [
                 [
@@ -93,8 +94,8 @@ describe('VSummaryContent.vue', () => {
       expect(actions.reloadAllData.args[0][1]).toEqual({ entity: '' })
     })
     it('it should commit default api Servers', () => {
-      expect(mutations.SET_API_SERVERS.calledOnce).toBeTrue()
-      expect(mutations.SET_API_SERVERS.args[0][1]).toEqual({ apiServers: ['aserver'] })
+      expect(actions.createApiServer.calledOnce).toBeTrue()
+      expect(actions.createApiServer.args[0][1]).toEqual({ haystackApiHost: 'http://localhost/' })
     })
     it('should commit new api filter', () => {
       expect(mutations.SET_FILTER_API.calledOnce).toBeTrue()
