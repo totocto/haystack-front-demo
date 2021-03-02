@@ -21,6 +21,12 @@
               <span v-if="isRefClickable(item)" class="entity-row__ref-row" @click="refClicked(getRefId(item))">{{
                 getRefName(item)
               }}</span>
+              <span
+                v-else-if="isExternalRef(item)"
+                class="entity-row__external-ref-row"
+                @click="externalRefClicked(getRefId(item))"
+                >{{ getRefName(item) }}</span
+              >
               <span v-else>{{ getRefName(item) }}</span>
               <v-icon class="material-icons entity-row__click-button" @click="copyText(item)">content_copy</v-icon>
             </div>
@@ -128,6 +134,9 @@ export default {
     }
   },
   methods: {
+    isExternalRef(item) {
+      return item.tag !== 'id'
+    },
     isRefClickable(item) {
       let isClickable = false
       if (item.tag === 'id') return false
@@ -144,6 +153,9 @@ export default {
     },
     refClicked(refId) {
       this.$emit('onRefClick', refId)
+    },
+    externalRefClicked(refId) {
+      this.$emit('onExternalRefClick', refId)
     },
     sortDataChart(dataChart) {
       return dataUtils.sortChartDataByDate(dataChart)
@@ -290,5 +302,10 @@ export default {
 .entity-row__ref-row {
   text-decoration: underline dotted;
   cursor: pointer;
+}
+.entity-row__external-ref-row {
+  text-decoration: underline dotted;
+  cursor: pointer;
+  color: grey;
 }
 </style>

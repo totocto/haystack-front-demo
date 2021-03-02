@@ -124,7 +124,7 @@ export const actions = {
             return []
           }
           // eslint-disable-next-line
-            if (entity.apiSource === apiNumber + 1) return context.getters.apiServers[apiNumber].getHistory(entity.id)
+          if (entity.apiSource === apiNumber + 1) return context.getters.apiServers[apiNumber].getHistory(entity.id)
           return []
         })
       )

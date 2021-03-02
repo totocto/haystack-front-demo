@@ -17,8 +17,10 @@ describe('store', () => {
   beforeAll(() => {
     const getEntityStub = sinon.stub(HaystackApiService.prototype, 'getEntity')
     getEntityStub.returns(entities)
-    const aboutQueryStub = sinon.stub(HaystackApiService.prototype, 'about')
-    aboutQueryStub.returns(true)
+    const getIsHisAvailableStub = sinon.stub(HaystackApiService.prototype, 'isHisReadAvailable')
+    getIsHisAvailableStub.returns(true)
+    const isHaystackApiStub = sinon.stub(HaystackApiService.prototype, 'isHaystackApi')
+    isHaystackApiStub.returns(true)
     const getHistoryStub = sinon.stub(HaystackApiService.prototype, 'getHistory')
     getHistoryStub.returns(['history1'])
   })
@@ -171,15 +173,39 @@ describe('store', () => {
       })
     })
     describe('#fetchHistories', () => {
+      // MORE TEST TO RIGHT: WHICH API CALL
       describe('When Api exists', () => {
-        it('should commit news histories to the first api', async () => {
-          const idsEntityWithHis = ['id1', 'id2']
-          const apiNumber = 0
-          const haystackApiHost = ''
-          const getters = { apiServers: [new HaystackApiService({ haystackApiHost })] }
-          const expected = { apiNumber: 0, idHistories: { id1: ['history1'], id2: ['history1'] } }
-          await actions.fetchHistories({ getters, commit }, { idsEntityWithHis, apiNumber })
-          expect(commit).toHaveBeenNthCalledWith(1, 'SET_HISTORIES', expected)
+        describe('When histories asked are from the correct API', () => {
+          it('should commit news histories to the api record', async () => {
+            // GIVEN
+            const idsEntityWithHis = [{ id: 'id1', apiSource: 1 }, { id: 'id2', apiSource: 1 }]
+            const apiNumber = 0
+            const haystackApiHost = ''
+            const getters = { apiServers: [new HaystackApiService({ haystackApiHost })] }
+
+            // WHEN
+            await actions.fetchHistories({ getters, commit }, { idsEntityWithHis, apiNumber })
+
+            // THEN
+            const expected = { apiNumber: 0, idHistories: { id1: ['history1'], id2: ['history1'] } }
+            expect(commit).toHaveBeenNthCalledWith(1, 'SET_HISTORIES', expected)
+          })
+        })
+        describe('When histories asked are not from the correct API', () => {
+          it('should commit empty array as histories to the api record', async () => {
+            // GIVEN
+            const idsEntityWithHis = [{ id: 'id1', apiSource: 2 }, { id: 'id2', apiSource: 2 }]
+            const apiNumber = 0
+            const haystackApiHost = ''
+            const getters = { apiServers: [new HaystackApiService({ haystackApiHost })] }
+
+            // WHEN
+            await actions.fetchHistories({ getters, commit }, { idsEntityWithHis, apiNumber })
+
+            // THEN
+            const expected = { apiNumber: 0, idHistories: { id1: [], id2: [] } }
+            expect(commit).toHaveBeenNthCalledWith(1, 'SET_HISTORIES', expected)
+          })
         })
       })
     })
@@ -189,8 +215,8 @@ describe('store', () => {
           apiServers: ['api1', 'api2'],
           entities: [
             [
-              { id: { val: 'r:id1 entity name' }, his: { val: 'm:' } },
-              { id: { val: 'r:id2 entity name' }, his: { val: 'm:' } }
+              { id: { val: 'r:id1 entity name' }, his: { val: 'm:', apiSource: 1 } },
+              { id: { val: 'r:id2 entity name' }, his: { val: 'm:',  apiSource: 2 } }
             ]
           ]
         }
@@ -198,11 +224,11 @@ describe('store', () => {
         expect(dispatch).toHaveBeenCalledTimes(2)
         expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchHistories', {
           apiNumber: 0,
-          idsEntityWithHis: ['id1', 'id2']
+          idsEntityWithHis: [{ id: 'id1', apiSource: 1 }, { id: 'id2', apiSource: 2 }]
         })
         expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchHistories', {
           apiNumber: 1,
-          idsEntityWithHis: ['id1', 'id2']
+          idsEntityWithHis: [ { id: 'id1', apiSource: 1 }, { id: 'id2', apiSource: 2 }]
         })
       })
       it('should fetch histories for 3 api when there is 3 api', async () => {
@@ -210,8 +236,8 @@ describe('store', () => {
           apiServers: ['api1', 'api2', 'api3'],
           entities: [
             [
-              { id: { val: 'r:id1 entity name' }, his: { val: 'm:' } },
-              { id: { val: 'r:id2 entity name' }, his: { val: 'm:' } }
+              { id: { val: 'r:id1 entity name' }, his: { val: 'm:', apiSource: 1 } },
+              { id: { val: 'r:id2 entity name' }, his: { val: 'm:', apiSource: 2 } }
             ]
           ]
         }
@@ -219,15 +245,15 @@ describe('store', () => {
         expect(dispatch).toHaveBeenCalledTimes(3)
         expect(dispatch).toHaveBeenNthCalledWith(1, 'fetchHistories', {
           apiNumber: 0,
-          idsEntityWithHis: ['id1', 'id2']
+          idsEntityWithHis: [{ id: 'id1', apiSource: 1 }, { id: 'id2', apiSource: 2 }]
         })
         expect(dispatch).toHaveBeenNthCalledWith(2, 'fetchHistories', {
           apiNumber: 1,
-          idsEntityWithHis: ['id1', 'id2']
+          idsEntityWithHis: [{ id: 'id1', apiSource: 1 }, { id: 'id2', apiSource: 2 }]
         })
         expect(dispatch).toHaveBeenNthCalledWith(3, 'fetchHistories', {
           apiNumber: 2,
-          idsEntityWithHis: ['id1', 'id2']
+          idsEntityWithHis: [{ id: 'id1', apiSource: 1 }, { id: 'id2', apiSource: 2 }]
         })
       })
     })

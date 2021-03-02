@@ -20,10 +20,14 @@ class HaystackApiService {
 
   async isHaystackApi() {
     try {
-      const response = await this.api.get(`/ops`)
-      if (response.data.rows.find(row => row.name === 's:read')) return true
+      const opsResponse = await this.api.get(`/ops`)
+      const formatResponse = await this.api.get(`/ops`)
+      console.log(formatResponse)
+      if (opsResponse.data.rows.find(row => row.name === 's:read')) return true
+      alert('Wrong API')
       return false
     } catch {
+      alert('Wrong API')
       return false
     }
   }
