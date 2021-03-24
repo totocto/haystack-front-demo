@@ -21,13 +21,15 @@ class HaystackApiService {
   async isHaystackApi() {
     try {
       const opsResponse = await this.api.get(`/ops`)
-      const formatResponse = await this.api.get(`/ops`)
-      console.log(formatResponse)
-      if (opsResponse.data.rows.find(row => row.name === 's:read')) return true
-      alert('Wrong API')
+      const formatResponse = await this.api.get(`/formats`)
+      const isHaystackApiAvailable =
+        opsResponse.data.rows.find(row => row.name === 's:read') &&
+        formatResponse.data.rows.find(row => row.mime === 's:application/json' && row.receive === 'm:')
+      if (isHaystackApiAvailable) return true
+      alert('API not available for')
       return false
     } catch {
-      alert('Wrong API')
+      alert('Not an Haystack API')
       return false
     }
   }
@@ -53,7 +55,7 @@ class HaystackApiService {
   }
 
   // getHistory => hisRead
-  async getHistory(id, range = 'today') {
+  async getHistory(id, range = '2020-01-01,2022-12-31') {
     try {
       const response = await this.api.get(`/hisRead?id=@${id}&range=${range}`)
       return response.data.rows

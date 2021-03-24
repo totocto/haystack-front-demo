@@ -49,7 +49,7 @@ export default {
       return this.$store.getters.isDataLoaded
     },
     entities() {
-      return this.$store.getters.entities
+      return this.$store.getters.entities.map(entities => entities.filter(entity => entity.id))
     },
     idsWithHis() {
       return this.entitiesGroupedById
@@ -151,6 +151,7 @@ export default {
       return formatService.formatEntityName(entity)
     },
     getEntityId(entity) {
+      if (!entity.id) return 'NaN'
       return entity.id.val.substring(2).split(' ')[0]
     },
     groupByIdEntities(entities) {
@@ -162,9 +163,15 @@ export default {
       return this.histories[sourceNumber][formattedId]
     },
     getHistories(idEntity) {
-      if (this.histories.length === 1) return [this.getHistory(idEntity, 0)]
+      if (this.histories.length === 1) {
+        const entityHis = this.getHistory(idEntity, 0)
+        return entityHis ? [this.getHistory(idEntity, 0)] : []
+      }
       // eslint-disable-next-line
-      return this.histories.map((history, index) => this.getHistory(idEntity, index))
+      return this.histories.map((history, index) => {
+          return this.getHistory(idEntity, index)
+        })
+        .filter(history => history)
     },
     async updateFilter(newFilter) {
       if (newFilter !== this.$store.getters.filterApi) {
@@ -183,11 +190,14 @@ export default {
     }
   },
   async beforeMount() {
-    if (this.apiServers.length === 0)
+    await this.reloadPageFromQueryParameters()
+    if (this.apiServers.length === 0) {
       await this.$store.dispatch('createApiServer', {
         haystackApiHost: `${window.location.origin}${window.location.pathname}`
       })
-    await this.reloadPageFromQueryParameters()
+      if (this.apiServers.length !== 0)
+        this.$router.push({ query: { a: `["${JSON.stringify(this.apiServers.join('","'))}"]` } }).catch(() => {})
+    }
   },
   updated() {
     if (this.isAnyData) {
