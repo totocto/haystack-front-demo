@@ -150,7 +150,6 @@ export default {
       tooltip : {
         enabled : true, 
         formatter : function() {
-          console.log(this.point)
           return `<div> <span> ${this.point.dis ? this.point.dis : this.point.id} </span> </div>`
         }
       },
