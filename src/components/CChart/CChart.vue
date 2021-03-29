@@ -36,7 +36,7 @@ export default {
   },
   data() {
     return {
-      colors: ['#dc143c', '#0000ff', '#00a86b', '#cc5500']
+      colors: API_COLORS
     }
   },
   mounted() {

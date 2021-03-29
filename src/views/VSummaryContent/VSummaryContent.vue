@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isAnyData" class="summary-content">
+  <div v-if="isAnyData && isDataLoaded" class="summary-content">
     <div class="summary-content__graph">
       <c-graph
         v-if="isDataLoaded"
@@ -25,13 +25,16 @@
       />
     </div>
   </div>
+  <div v-else-if="!isDataLoaded" class="summary-content__spinner">
+    <v-progress-circular :size="100" :width="10" indeterminate></v-progress-circular>
+  </div>
   <div v-else class="summary-content">
     NO DATA
   </div>
 </template>
 
 <script>
-import { formatService } from '../../services'
+import { formatService, API_COLORS } from '../../services'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.vue'
 import CGraph from '../../components/CGraph/CGraph.vue'
 
@@ -109,12 +112,9 @@ export default {
       return top >= window.pageYOffset && top + height <= window.pageYOffset + window.innerHeight
     },
     isPointFromSource(pointName, colorEntities) {
-      return colorEntities.find(
-        entityColor =>
-          entityColor.id === pointName && ['#dc143c', '#0000ff', '#00a86b', '#cc5500'].includes(entityColor.color)
-      )
+      return colorEntities.find(entityColor => entityColor.id === pointName && API_COLORS.includes(entityColor.color))
     },
-    async onRefClick(refId) {
+    onRefClick(refId) {
       this.$refs[refId][0].$el.scrollIntoView(true)
       window.scrollBy(0, -70)
       const { query } = this.$route
@@ -222,6 +222,13 @@ export default {
 <style lang="scss">
 .summary-content {
   padding-top: 25px;
+}
+.summary-content__spinner {
+  color: black;
+  background: white;
+  justify-content: center;
+  margin-top: 30px;
+  text-align: center;
 }
 .summary-content__graph {
   width: 80%;

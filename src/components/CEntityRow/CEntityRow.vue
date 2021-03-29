@@ -258,6 +258,19 @@ export default {
 .apiSource_6 {
   background: #a39178;
 }
+.apiSource_7 {
+  background: #ebeb2c;
+}
+.apiSource_8 {
+  background: #f516d0;
+}
+.apiSource_9 {
+  background: #16f5dd;
+}
+.apiSource_10 {
+  background: #4516f5;
+}
+
 .entity-row__ref-row {
   text-decoration: underline dotted;
   cursor: pointer;

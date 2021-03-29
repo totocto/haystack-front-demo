@@ -10,11 +10,11 @@ const router = new Router({
   mode: 'history',
   routes: [
     {
-      path: '',
+      path: '*/haystack/',
       component: VMainLayout,
       children: [
         {
-          path: '/',
+          path: '',
           name: 'summary',
           component: VSummaryContent
         }
