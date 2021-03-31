@@ -10,7 +10,7 @@ const state = {
   entities: [[]],
   histories: [{}],
   apiServers: [],
-  dateRange: { start: '0000-01-01', end: '9999-01-01' },
+  dateRange: { start: '0001-01-01', end: '9998-12-31' },
   isDataLoaded: false,
   filterApi: ''
 }
@@ -64,12 +64,12 @@ export const mutations = {
     state.filterApi = filterApi
   },
   SET_START_DATE_RANGE(state, { startDateRange }) {
-    let dateRange = state.dateRange.slice()
+    const dateRange = { ...state.dateRange }
     dateRange.start = startDateRange
     state.dateRange = dateRange
   },
   SET_END_DATE_RANGE(state, { endDateRange }) {
-    let dateRange = state.dateRange.slice()
+    const dateRange = { ...state.dateRange }
     dateRange.end = endDateRange
     state.dateRange = dateRange
   }

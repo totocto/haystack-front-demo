@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import { formatService, API_COLORS } from '../../services'
+import { formatService, API_COLORS, dataUtils } from '../../services'
 import CEntityRow from '../../components/CEntityRow/CEntityRow.vue'
 import CGraph from '../../components/CGraph/CGraph.vue'
 
@@ -85,6 +85,16 @@ export default {
         if (this.$route.query.q) {
           await this.$store.commit('SET_FILTER_API', { filterApi: this.$route.query.q })
         } else this.$store.commit('SET_FILTER_API', { filterApi: '' })
+        if (this.$route.query.d) {
+          const startDate = this.$route.query.d.split(',')[0]
+          const endDate = this.$route.query.d.split(',')[1]
+          if (dataUtils.checkDateFormat(startDate)) {
+            await this.$store.commit('SET_START_DATE_RANGE', { startDateRange: startDate })
+          }
+          if (dataUtils.checkDateFormat(endDate)) {
+            await this.$store.commit('SET_END_DATE_RANGE', { endDateRange: endDate })
+          }
+        }
       }
       await this.$store.dispatch('reloadAllData', { entity: this.filterApi })
     },
