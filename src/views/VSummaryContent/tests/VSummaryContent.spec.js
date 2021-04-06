@@ -74,7 +74,7 @@ describe('VSummaryContent.vue', () => {
             getters: {
               filterApi: () => '',
               isDataLoaded: () => true,
-              apiServers: () => [], // ['an api'],
+              apiServers: () => [],
               histories: () => [{ 'p:thisisademo1': ['history1'] }, []],
               entities: () => [
                 [
