@@ -9,6 +9,9 @@ const formatService = {
   isRef: value => {
     return value.substring(0,2) === 'r:'
   },
+  isNumber: string => {
+    return Boolean(Number(string))
+  },
   isEntityFromSource: (entitiesFromAllSource, entityId) => {
     let isEntityFromSource = false
     entitiesFromAllSource.map(entities => {
@@ -38,14 +41,13 @@ const formatService = {
       else return `${formatService.dateConvertor(dateRange.start).toISOString()},${formatService.dateConvertor(dateRange.end).toISOString()}`
     }
     else
-      return `${dateRange.start === '' ? '' : formatService.dateConvertor(dateRange.start).toISOString()} New_York,${dateRange.end === '' ? '' : formatService.dateConvertor(dateRange.end).toISOString()}`
+      return `${dateRange.start === '' ? '' : formatService.dateConvertor(dateRange.start).toISOString()},${dateRange.end === '' ? '' : formatService.dateConvertor(dateRange.end).toISOString()}`
   },
   dateConvertor(date, isStartDate=true) {
     if (date === 'today') return isStartDate ? new Date() : new Date(new Date().setDate(new Date().getDate() + 1))
     else if (date === 'yesterday') return isStartDate ? new Date(new Date().setDate(new Date().getDate() - 1)) : new Date()
     else if (!date || date === '') return ''
     else {
-      console.log('i will return date') 
       return new Date(date)
     }
   },
