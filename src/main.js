@@ -6,6 +6,7 @@ import vuetify from './plugins/vuetify'
 
 Vue.config.productionTip = false
 
+// Vue.use(MyCustomPlugin)
 async function mountApp() {
   new Vue({
     router,

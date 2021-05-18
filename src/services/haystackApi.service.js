@@ -1,20 +1,27 @@
 import axios from 'axios'
 
 class HaystackApiService {
-  constructor({ haystackApiHost }) {
+  constructor({ haystackApiHost, apiKey }) {
     this.haystackApiHost = haystackApiHost
+    this.apiKey = apiKey
   }
   // Invoquer ops pour savoir les méthodes qui sont disponibles
   // Invoquer format pour savoir si l'api est compatible avec le format JSON
 
   get api() {
+    const headers = this.apiKey
+      ? {
+          'Content-Type': 'application/json',
+          KeyId: this.apiKey
+        }
+      : {
+          'Content-Type': 'application/json'
+        }
     return axios.create({
       baseURL: `${this.haystackApiHost}`,
       timeout: 20000,
       withCredentials: false,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers
     })
   }
 
