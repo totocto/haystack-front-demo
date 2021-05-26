@@ -234,9 +234,8 @@ export default {
     async updateAPI() {
       const haystackApiHost = this.comboboxInput
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
-        const apiKey = prompt('You can enter an api token if needed', '')
         const apiServersBeforeAdd = this.getApiServers.slice()
-        await this.$store.dispatch('createApiServer', { haystackApiHost, apiKey })
+        await this.$store.dispatch('createApiServer', { haystackApiHost })
         await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
         if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
           const { q, d, l, v } = this.$route.query
