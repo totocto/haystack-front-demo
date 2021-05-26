@@ -51,7 +51,7 @@ export const mutations = {
     apiServers.map(apiServer => {
       newEntities.push([])
       newHistories.push({})
-      const apiKey = localStorage.get(apiServer) ? localStorage.get(apiServer) : ''
+      const apiKey = localStorage.getItem(apiServer) ? localStorage.getItem(apiServer) : ''
       newApiServers.push(new HaystackApiService({ haystackApiHost: apiServer, apiKey }))
     })
     state.entities = newEntities
