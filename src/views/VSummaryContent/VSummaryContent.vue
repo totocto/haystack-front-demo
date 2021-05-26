@@ -29,7 +29,7 @@
     <v-progress-circular :size="100" :width="10" indeterminate></v-progress-circular>
   </div>
   <div v-else class="summary-content">
-    NO DATA
+    <v-alert type="error" class="summary-content__alert-no-data">Enter an API that contains data</v-alert>
   </div>
 </template>
 
@@ -264,5 +264,9 @@ export default {
 }
 .summary-content__entity-row {
   background-color: white;
+}
+.summary-content__alert-no-data {
+  width: 500px;
+  margin: 0 auto;
 }
 </style>
