@@ -8,12 +8,12 @@
           alt="Vuetify Logo"
           class="shrink mr-2"
           contain
-          :src="require('../../assets/engieLogo.png')"
+          src="require('../../assets/engieLogo.png')"
           transition="scale-transition"
           width="90"
           disabled
         />
-        <h2 class="main-layout__title">Haystack</h2>
+        <h2 class="main-layout__title">Shift For Haystack</h2>
       </div>
       <v-text-field
         height="40px"
@@ -112,7 +112,7 @@
       </div>
       <v-spacer></v-spacer>
       <div class="main-layout__download_button">
-        <v-btn icon :href="convertData()" download="ontology.json"><v-icon>file_download</v-icon></v-btn>
+        <v-btn icon :href="convertData()" download="ontology.json" class="test"><v-icon>file_download</v-icon></v-btn>
       </div>
       <v-menu v-model="menu" bottom :offset-y="true" :close-on-content-click="false">
         <template v-slot:activator="{ on, attrs }">
@@ -350,13 +350,12 @@ export default {
       if (entities.length === 0) data = {}
       else {
         data = entities.length === 1 ? entities[0] : formatService.groupAllEntitiesById(entities)
-        data = formatService.addApiSourceInEntities(data, this.getApiServers)
+        data = formatService.formatHaystackJson(data)
       }
       const contentType = 'application/json'
       const dData = JSON.stringify(data, null, 2)
       const blob = new Blob([dData], { type: contentType })
-      const url = window.URL.createObjectURL(blob)
-      return url
+      return window.URL.createObjectURL(blob)
     }
   }
 }
@@ -364,6 +363,7 @@ export default {
 
 <style lang="scss">
 .main-layout {
+  height: 100%;
   background-color: #f2f2f2;
 }
 .main-layout__params {

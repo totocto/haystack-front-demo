@@ -243,7 +243,6 @@ export default {
   padding: 0 !important;
   font-weight: bold;
   letter-spacing: normal;
-  background-color: white !important;
 }
 .apiSource_1 {
   background: #d4bbbb;

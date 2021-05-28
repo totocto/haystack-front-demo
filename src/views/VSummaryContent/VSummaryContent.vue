@@ -265,6 +265,9 @@ export default {
 .summary-content__entity-row {
   background-color: white;
 }
+.summary-content__entity-row:last-child {
+  margin-bottom: 200px;
+}
 .summary-content__alert-no-data {
   width: 500px;
   margin: 0 auto;
