@@ -3,8 +3,6 @@
     <v-card flat tile width="100%" class="grey lighten-3 text-center">
       <v-card-text style="display:flex">
         <div class="footer__help">
-          <h3>How to join us</h3>
-          <br />
           <a href="https://github.com/engie-group/shaystack" class="footer__help-links">
             Github Project
           </a>
@@ -34,7 +32,7 @@ export default {
 .footer__help {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 10%;
   justify-content: center;
 }
 .footer__help-links {

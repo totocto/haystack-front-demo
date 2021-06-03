@@ -5,8 +5,8 @@ import { actions, getters, mutations } from '../store'
 import HaystackApiService from '../services/haystackApi.service'
 
 const {
-  SET_ENTITIES,
-  SET_HISTORIES,
+  ADD_NEW_ENTITIES,
+  ADD_NEW_HISTORIES,
   SET_HAYSTACK_API,
   SET_FILTER_API,
   DELETE_HAYSTACK_API,
@@ -25,23 +25,23 @@ describe('store', () => {
     getHistoryStub.returns(['history1'])
   })
   describe('mutations', () => {
-    describe('#SET_ENTITIES', () => {
+    describe('#ADD_NEW_ENTITIES', () => {
       it('should set entities', () => {
         const state = { entities: [[]] }
         const entities = ['entity1', 'entity2']
-        SET_ENTITIES(state, { entities, apiNumber: 0 })
+        ADD_NEW_ENTITIES(state, { entities, apiNumber: 0 })
         expect(state.entities).toEqual([entities])
       })
       it('should set entities', () => {
         const state = { entities: [['entity1']] }
         const entities = ['entity1', 'entity2']
-        SET_ENTITIES(state, { entities, apiNumber: 1 })
+        ADD_NEW_ENTITIES(state, { entities, apiNumber: 1 })
         expect(state.entities).toEqual([['entity1'], entities])
       })
       it('should set entities', () => {
         const state = { entities: [['entity1'], ['entity2']] }
         const entities = ['entity1', 'entity2']
-        SET_ENTITIES(state, { entities, apiNumber: 1 })
+        ADD_NEW_ENTITIES(state, { entities, apiNumber: 1 })
         expect(state.entities).toEqual([['entity1'], entities])
       })
     })
@@ -53,11 +53,11 @@ describe('store', () => {
         expect(state.filterApi).toBe(newFilterApi)
       })
     })
-    describe('#SET_HISTORIES', () => {
+    describe('#ADD_NEW_HISTORIES', () => {
       it('should set histories', () => {
         const state = { histories: [{}, {}] }
         const idHistories = { entity1: ['history'], entity2: ['history'] }
-        SET_HISTORIES(state, { idHistories, apiNumber: 0 })
+        ADD_NEW_HISTORIES(state, { idHistories, apiNumber: 0 })
         expect(state.histories).toEqual([idHistories, {}])
       })
     })
@@ -191,7 +191,7 @@ describe('store', () => {
 
             // THEN
             const expected = { apiNumber: 0, idHistories: { id1: ['history1'], id2: ['history1'] } }
-            expect(commit).toHaveBeenNthCalledWith(1, 'SET_HISTORIES', expected)
+            expect(commit).toHaveBeenNthCalledWith(1, 'ADD_NEW_HISTORIES', expected)
           })
         })
         describe('When histories asked are not from the correct API', () => {
@@ -210,7 +210,7 @@ describe('store', () => {
 
             // THEN
             const expected = { apiNumber: 0, idHistories: { id1: [], id2: [] } }
-            expect(commit).toHaveBeenNthCalledWith(1, 'SET_HISTORIES', expected)
+            expect(commit).toHaveBeenNthCalledWith(1, 'ADD_NEW_HISTORIES', expected)
           })
         })
       })

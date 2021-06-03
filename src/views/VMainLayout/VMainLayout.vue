@@ -9,7 +9,7 @@
             alt="Vuetify Logo"
             class="shrink mr-2"
             contain
-            src="require('../../assets/engieLogo.png')"
+            src="https://raw.githubusercontent.com/engie-group/shaystack/develop/docs/logo.png"
             transition="scale-transition"
             width="90"
             disabled
@@ -124,72 +124,74 @@
         </div>
         <v-spacer></v-spacer>
         <div class="main-layout__button">
-          <v-btn icon :href="convertData()" download="ontology.json" class="test"><v-icon>file_download</v-icon></v-btn>
+          <v-btn icon :href="convertData()" download="ontology.json"><v-icon>file_download</v-icon></v-btn>
         </div>
-        <v-menu v-model="menu" bottom :offset-y="true" :close-on-content-click="false" style="display:flex;">
+        <v-menu v-model="menu" bottom offset-y :close-on-content-click="false">
           <template v-slot:activator="{ on, attrs }">
             <v-btn class="main-layout__params" dark icon v-bind="attrs" v-on="on">
               <v-icon>mdi-cogs</v-icon>
             </v-btn>
           </template>
-          <div class="main-layout__settings">
-            <span class="main-layout__settings__text">Limit: </span>
-            <v-btn
-              class="main-layout__settings__buttons"
-              color="grey"
-              icon
-              x-small
-              dark
-              @click.native="increaseLimit()"
-            >
-              <v-icon dark>
-                mdi-plus
-              </v-icon>
-            </v-btn>
-            <v-text-field
-              class="main-layout__settings__text-field__limit"
-              outlined
-              :value="limit"
-              dense
-              background-color="white"
-              @change="updateLimit($event)"
-              hide-details
-            />
-            <v-btn
-              class="mx-2 main-layout__settings__buttons"
-              color="grey"
-              icon
-              x-small
-              dark
-              @click.native="decreaseLimit()"
-            >
-              <v-icon dark>
-                mdi-minus
-              </v-icon>
-            </v-btn>
-          </div>
-          <div class="main-layout__settings">
-            <span class="main-layout__settings__text-version">Version: </span>
-            <v-text-field
-              class="main-layout__settings__text-field__version"
-              outlined
-              dense
-              :value="version"
-              background-color="white"
-              @change="updateVersion($event)"
-              hide-details
-            />
-          </div>
-          <div class="main-layout__settings">
-            <v-btn
-              color="blue-grey"
-              rounded
-              class="main-layout__settings__cache-button white--text"
-              @click.native="clearLocalStorage()"
-            >
-              Clear api keys
-            </v-btn>
-          </div>
+          <v-list class="main-layout__menu-list">
+            <v-list-item class="main-layout__settings">
+              <span class="main-layout__settings__text">Limit: </span>
+              <v-btn
+                class="main-layout__settings__buttons"
+                color="grey"
+                icon
+                x-small
+                dark
+                @click.native="increaseLimit()"
+              >
+                <v-icon dark>
+                  mdi-plus
+                </v-icon>
+              </v-btn>
+              <v-text-field
+                class="main-layout__settings__text-field__limit"
+                outlined
+                :value="limit"
+                dense
+                background-color="white"
+                @change="updateLimit($event)"
+                hide-details
+              />
+              <v-btn
+                class="mx-2 main-layout__settings__buttons"
+                color="grey"
+                icon
+                x-small
+                dark
+                @click.native="decreaseLimit()"
+              >
+                <v-icon dark>
+                  mdi-minus
+                </v-icon>
+              </v-btn>
+            </v-list-item>
+            <v-list-item class="main-layout__settings">
+              <span class="main-layout__settings__text-version">Version: </span>
+              <v-text-field
+                class="main-layout__settings__text-field__version"
+                outlined
+                dense
+                :value="version"
+                background-color="white"
+                @change="updateVersion($event)"
+                hide-details
+              />
+            </v-list-item>
+            <v-list-item class="main-layout__settings">
+              <v-btn
+                color="blue-grey"
+                rounded
+                class="main-layout__settings__cache-button white--text"
+                @click.native="clearLocalStorage()"
+              >
+                Clear api keys
+              </v-btn>
+            </v-list-item>
+          </v-list>
         </v-menu>
       </div>
     </v-app-bar>
@@ -243,10 +245,10 @@ export default {
       return Boolean(this.$store.getters.apiServers.find(apiServer => apiServer.haystackApiHost === host))
     },
     async changeApiServers(haystackApiHost) {
-      this.$store.commit('DELETE_HAYSTACK_API', { haystackApiHost })
-      if (this.getApiServers.length > 0) {
-        await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
-      }
+      await this.$store.dispatch('deleteHaystackApi', { haystackApiHost })
+      // if (this.getApiServers.length > 0) {
+      //   await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+      // }
       const { q, d, l, v } = this.$route.query
       if (this.getApiServers.length > 0)
         this.$router.push({ query: { q, d, l, v, a: `["${this.getApiServers.join('","')}"]` } })
@@ -257,8 +259,11 @@ export default {
       const haystackApiHost = this.comboboxInput
       if (!this.isApiServerAlreadyExists(haystackApiHost)) {
         const apiServersBeforeAdd = this.getApiServers.slice()
-        await this.$store.dispatch('createApiServer', { haystackApiHost })
-        await this.$store.dispatch('reloadAllData', { entity: this.$store.getters.filterApi })
+        await this.$store.dispatch('createApiServer', { haystackApiHost, isStart: false })
+        await this.$store.dispatch('reloadDataForOneApi', {
+          entity: this.$store.getters.filterApi,
+          apiNumber: this.getApiServers.length - 1
+        })
         if (JSON.stringify(this.getApiServers) !== JSON.stringify(apiServersBeforeAdd)) {
           const { q, d, l, v } = this.$route.query
           const { hash } = this.$route
@@ -419,16 +424,9 @@ export default {
 }
 .main-layout__settings {
   background: white;
-  width: 200px;
   display: flex;
   justify-content: space-between;
   vertical-align: middle;
-}
-.main-layout__settings__text-version {
-}
-.main-layout__settings__buttons {
-}
-.main-layout__settings__text {
 }
 .main-layout__tootltips {
   display: flex;
@@ -438,16 +436,12 @@ export default {
   color: black !important;
   border: 1px solid !important;
 }
-.main-layout__api-server-selection {
-  padding-left: 5px;
-  width: 100px;
-}
 .v-input__slot {
   min-height: 20px !important;
 }
 .main-layout__settings__text-field__limit {
-  width: 2%;
-  display: inline-block;
+  display: flex;
+  width: 1%;
   .v-input--is-focused {
     background: white;
   }
@@ -470,6 +464,12 @@ export default {
   .v-input--is-focused {
     background: white;
   }
+}
+.main-layout__menu-list {
+  display: flex;
+  flex: auto;
+  width: 200px;
+  flex-direction: column;
 }
 .v-toolbar__content {
   background-color: white;
@@ -514,5 +514,8 @@ export default {
 }
 .main-layout__settings__cache-button {
   margin: auto;
+}
+.test {
+  width: 10% !important;
 }
 </style>

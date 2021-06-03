@@ -25,7 +25,7 @@ class HaystackApiService {
     })
   }
 
-  async isHaystackApi() {
+  async isHaystackApi(isStart = false) {
     try {
       const opsResponse = await this.api.get(`/ops`)
       const formatResponse = await this.api.get(`/formats`)
@@ -41,7 +41,7 @@ class HaystackApiService {
         return 'notAuthenticated'
       }
       if (statusCodeError === 404) {
-        alert('this is not a haystack API')
+        if (!isStart) alert('this is not a haystack API')
         return 'unreachable'
       }
       if (statusCodeError === 500) {
